@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.1
+// @version      0.2
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -68,33 +68,14 @@
     const checkPass = checkIfTestsPass();
 
     if (!autoMergeStarted && checkPass) {
-      mergeButton = $('.mergeability-details .btn-group-merge');
+      mergeButton = $(
+        '.merge-pr:not(.open) .mergeability-details .btn-group-merge'
+      );
+
       mergeButtonContainer = mergeButton && mergeButton.closest('.select-menu');
 
       if (mergeButton && mergeButtonContainer && mergeButton.disabled) {
-        autoMergeButton = $('.gam-button', mergeButtonContainer);
-
-        if (!autoMergeButton) {
-          autoMergeButton = document.createElement('button');
-          autoMergeButton.setAttribute('type', 'button');
-          autoMergeButton.classList.add('gam-button', 'btn', 'btn-primary');
-          autoMergeButton.innerText = 'Auto merge when green';
-          mergeButtonContainer.style.display = 'block';
-          mergeButtonContainer.appendChild(autoMergeButton);
-          autoMergeButton = $('.gam-button', mergeButtonContainer);
-
-          autoMergeButton.addEventListener('click', () => {
-            autoMergeButton.innerText = 'Will merge when green';
-            autoMergeButton.disabled = true;
-            autoMergeStarted = true;
-            console.log(
-              '%cAutoMergeWhenGreen: %c"' + PRname + '" (' + branchName + ')',
-              'color: green',
-              'color: yellow',
-              '\nWaiting for the Merge button to become enabled...'
-            );
-          });
-        }
+        addAutoMergeButton();
       }
     }
 
@@ -103,6 +84,32 @@
       checkIfCanMerge();
       checkIfNeedToConfirm();
       checkIfNeedToDeleteBranch();
+    }
+  };
+
+  const addAutoMergeButton = () => {
+    autoMergeButton = $('.merge-pr .gam-button');
+
+    if (!autoMergeButton) {
+      autoMergeButton = document.createElement('button');
+      autoMergeButton.setAttribute('type', 'button');
+      autoMergeButton.classList.add('gam-button', 'btn', 'btn-primary');
+      autoMergeButton.innerText = 'Auto merge when green';
+      mergeButtonContainer.style.display = 'block';
+      mergeButtonContainer.appendChild(autoMergeButton);
+      autoMergeButton = $('.gam-button', mergeButtonContainer);
+
+      autoMergeButton.addEventListener('click', () => {
+        autoMergeButton.innerText = 'Will merge when green';
+        autoMergeButton.disabled = true;
+        autoMergeStarted = true;
+        console.log(
+          '%cAutoMergeWhenGreen: %c"' + PRname + '" (' + branchName + ')',
+          'color: green',
+          'color: yellow',
+          '\nWaiting for the Merge button to become enabled...'
+        );
+      });
     }
   };
 
@@ -137,9 +144,11 @@
           'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiNkNzVhNGEiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjMiIGQ9Ik0xNiAzNGw5LTkgOS05TTE2IDE2bDkgOSA5IDkiLz48L3N2Zz4=',
         icon:
           'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiNkNzVhNGEiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjMiIGQ9Ik0xNiAzNGw5LTkgOS05TTE2IDE2bDkgOSA5IDkiLz48L3N2Zz4=',
+        timeout: !autoMergeStarted ? 10000 : 0,
       });
 
       testFailMessageShown = true;
+      autoMergeStarted = false;
     }
 
     if (checkFailed) {
@@ -177,7 +186,7 @@
       confirmMergeButton &&
       confirmMergeButton.innerHTML.toLowerCase().includes('confirm')
     ) {
-      // confirmMergeButton.click();
+      confirmMergeButton.click();
 
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRname + '" (' + branchName + ')',
@@ -207,7 +216,7 @@
       deleteBranchButton.innerHTML.toLowerCase().includes('branch');
 
     if (canDelete) {
-      // deleteBranchButton.click();
+      deleteBranchButton.click();
     }
 
     if (alreadyDeleted || canDelete) {
@@ -225,7 +234,7 @@
         text: PRname + '" (' + branchName + ')',
         image:
           'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiMyNWFlODgiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjMiIGQ9Ik0zOCAxNUwyMiAzM2wtMTAtOCIvPjwvc3ZnPg==',
-        timeout: 10000,
+        timeout: 12000,
       });
     }
   };
@@ -250,7 +259,7 @@
         text: PRname + '" (' + branchName + ')',
         image:
           'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiM0M2IwNWMiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjMiIGQ9Ik0yNSAxM3YyNU0zOCAyNUgxMyIvPjwvc3ZnPg==',
-        timeout: 5000,
+        timeout: 7000,
       });
       testFailMessageShown = false;
     }
