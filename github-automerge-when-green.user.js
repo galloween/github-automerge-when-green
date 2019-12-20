@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.3
+// @version      0.35
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -129,19 +129,19 @@
   };
 
   const doChecks = () => {
-    const checkPass = checkIfTestsPass();
+    const testsPass = checkIfTestsPass();
 
-    if (checkPass) {
+    if (testsPass) {
       mergeButton = $(
         '.merge-pr:not(.open) .mergeability-details .btn-group-merge'
       );
-
       mergeButtonContainer = mergeButton && mergeButton.closest('.select-menu');
 
       if (mergeButton && mergeButtonContainer && mergeButton.disabled) {
         addAutoMergeButton(autoMergeStarted);
       }
-      if (mergeButton && !mergeButton.disabled) {
+
+      if (mergeButton && !mergeButton.disabled && !autoMergeStarted) {
         console.log(
           '%cAutoMergeWhenGreen: %c"' + PRid,
           'color: orange',
@@ -151,16 +151,13 @@
 
         finishAutoMerge();
       }
-    }
 
-    if (autoMergeStarted) {
-      if (checkIfNeedToGiveUp()) {
-        return;
+      if (autoMergeStarted && !checkIfNeedToGiveUp()) {
+        checkIfBranchOutOfDate();
+        checkIfCanMerge();
+        checkIfNeedToConfirm();
+        checkIfNeedToDeleteBranch();
       }
-      checkIfBranchOutOfDate();
-      checkIfCanMerge();
-      checkIfNeedToConfirm();
-      checkIfNeedToDeleteBranch();
     }
   };
 
