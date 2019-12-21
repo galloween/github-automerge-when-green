@@ -5,10 +5,7 @@
 #### Installing
 
 - Install and enable TamperMonkey extension: [Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) | [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
-
 - [Click here](https://github.com/galloween/github-automerge-when-green/raw/master/github-automerge-when-green.user.js)  to go to script code, TamperMonkey should automatically offer to install script 
-
-
 
 #### Using
 
