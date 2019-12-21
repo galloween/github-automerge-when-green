@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.35
+// @version      0.36
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -14,7 +14,6 @@
 // @grant       GM_notification
 // @grant       GM_setValue
 // @grant       GM_getValue
-// @grant       GM_listValues
 // ==/UserScript==
 
 (() => {
@@ -91,6 +90,18 @@
       );
 
       observer.observe(githubApp, obsrverConfig);
+
+      githubApp.addEventListener('click', event => {
+        const target = event.target;
+
+        if (target.classList.contains('gam-button')) {
+          onAutoMergeButtonClick();
+        }
+
+        if (target.classList.contains('gam-cancel-button')) {
+          onAutoMergeCancelButtonClick();
+        }
+      });
     }
 
     if (!PRid) {
@@ -149,7 +160,16 @@
           '\nBranch can be merged, no auto-merge needed.'
         );
 
-        finishAutoMerge();
+        finishAutoMerge(true);
+      }
+
+      if (!mergeButton && !autoMergeStarted) {
+        console.log(
+          '%cAutoMergeWhenGreen: %c"' + PRid,
+          'color: orange',
+          'color: yellow',
+          '\nNothing to merge here.'
+        );
       }
 
       if (autoMergeStarted && !checkIfNeedToGiveUp()) {
@@ -174,41 +194,8 @@
       mergeButtonContainer.setAttribute('style', 'display: block;');
       mergeButtonContainer.appendChild(autoMergeButton);
       autoMergeButton = $('.gam-button', mergeButtonContainer);
-
-      autoMergeButton.addEventListener('click', () => {
-        mergingBranches[PRid] = timeStampNow;
-        GM_setValue('GHAMWG_mergingBranches', mergingBranches);
-        autoMergeStarted = true;
-        observer.disconnect();
-        observer.observe(githubApp, obsrverConfig);
-
-        autoMergeButton.disabled = true;
-        setAMButtonImgWait();
-
-        if (autoMergeCancelButton) {
-          autoMergeCancelButton.hidden = false;
-        }
-
-        console.log(
-          '%cAutoMergeWhenGreen: %c"' + PRid,
-          'color: green',
-          'color: yellow',
-          '\nWaiting for the Merge button to become enabled...'
-        );
-
-        clearInterval(refreshIntervalId);
-        refreshIntervalId = setInterval(() => {
-          console.log(
-            '%cAutoMergeWhenGreen: %c"' + PRid,
-            'color: green',
-            'color: yellow',
-            '\nWill refresh page...'
-          );
-
-          location.reload();
-        }, 1000 * 60 * refreshAfterMin);
-      });
     }
+
     if (!autoMergeCancelButton) {
       autoMergeCancelButton = document.createElement('button');
       autoMergeCancelButton.setAttribute('type', 'button');
@@ -229,21 +216,74 @@
       autoMergeCancelButton.innerText = 'Cancel';
       mergeButtonContainer.appendChild(autoMergeCancelButton);
       autoMergeCancelButton = $('.gam-cancel-button', mergeButtonContainer);
-
-      autoMergeCancelButton.addEventListener('click', () => {
-        console.log(
-          '%cAutoMergeWhenGreen: %c"' + PRid,
-          'color: orange',
-          'color: yellow',
-          '\nAuto-merge cancelled.'
-        );
-        finishAutoMerge();
-      });
     }
 
     if (autostart && !autoMergeButton.disabled) {
-      autoMergeButton.click();
+      if (autoMergeStarted && refreshIntervalId) {
+        switchButtonsView(true);
+      } else {
+        autoMergeButton.click();
+      }
     }
+  };
+
+  const switchButtonsView = (inProgress = true) => {
+    if (inProgress && autoMergeButton) {
+      autoMergeButton.disabled = true;
+      setAMButtonImgWait();
+    }
+
+    if (inProgress && autoMergeCancelButton) {
+      autoMergeCancelButton.hidden = false;
+    }
+
+    if (!inProgress && autoMergeButton) {
+      autoMergeButton.disabled = false;
+      setAMButtonImgPlay();
+    }
+
+    if (!inProgress && autoMergeCancelButton) {
+      autoMergeCancelButton.hidden = true;
+    }
+  };
+
+  const onAutoMergeButtonClick = () => {
+    mergingBranches[PRid] = timeStampNow;
+    GM_setValue('GHAMWG_mergingBranches', mergingBranches);
+    autoMergeStarted = true;
+    observer.disconnect();
+    observer.observe(githubApp, obsrverConfig);
+
+    switchButtonsView(true);
+
+    console.log(
+      '%cAutoMergeWhenGreen: %c"' + PRid,
+      'color: green',
+      'color: yellow',
+      '\nWaiting for the Merge button to become enabled...'
+    );
+
+    clearInterval(refreshIntervalId);
+    refreshIntervalId = setInterval(() => {
+      console.log(
+        '%cAutoMergeWhenGreen: %c"' + PRid,
+        'color: green',
+        'color: yellow',
+        '\nWill refresh page...'
+      );
+
+      location.reload();
+    }, 1000 * 60 * refreshAfterMin);
+  };
+
+  const onAutoMergeCancelButtonClick = () => {
+    console.log(
+      '%cAutoMergeWhenGreen: %c"' + PRid,
+      'color: orange',
+      'color: yellow',
+      '\nAuto-merge cancelled.'
+    );
+    finishAutoMerge(false);
   };
 
   const checkIfNeedToGiveUp = () => {
@@ -267,7 +307,7 @@
         timeout: !autoMergeStarted ? 10000 : 0,
       });
 
-      finishAutoMerge();
+      finishAutoMerge(false);
       return true;
     }
     return false;
@@ -385,7 +425,7 @@
     }
 
     if (alreadyDeleted || canDelete) {
-      finishAutoMerge();
+      finishAutoMerge(true);
 
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
@@ -428,19 +468,11 @@
     }
   };
 
-  const finishAutoMerge = () => {
+  const finishAutoMerge = (disconnect = true) => {
     autoMergeStarted = false;
     testFailMessageShown = false;
-    observer.disconnect();
 
-    if (autoMergeButton) {
-      autoMergeButton.disabled = false;
-      setAMButtonImgPlay();
-    }
-
-    if (autoMergeCancelButton) {
-      autoMergeCancelButton.hidden = true;
-    }
+    switchButtonsView(false);
 
     if (refreshIntervalId) {
       clearInterval(refreshIntervalId);
@@ -449,6 +481,10 @@
 
     delete mergingBranches[PRid];
     GM_setValue('GHAMWG_mergingBranches', mergingBranches);
+
+    if (disconnect) {
+      observer.disconnect();
+    }
   };
 
   const removeElement = element => {
