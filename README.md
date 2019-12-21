@@ -4,7 +4,7 @@
 
 #### Installing
 
-- Install and enable TamperMonkey extension: [Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en)  [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
+- Install and enable TamperMonkey extension: [Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) | [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
 
 - [Click here](https://github.com/galloween/github-automerge-when-green/raw/master/github-automerge-when-green.user.js)  to go to script code, TamperMonkey should automatically offer to install script 
 
@@ -16,8 +16,8 @@ The userscript adds an Auto-merge button to the PR page (Conversation tab). Once
 
 #### How it works
 
-- If the script detects disabled ‘Merge pull request’ button, it adds the Auot-merge button
-- It uses MutationObserver to watch page changes. When the  ‘Merge pull request’ becomes enabled, it will click it.
+- If the script detects disabled ‘Merge pull request’ button, it adds the Auto-merge button
+- It uses MutationObserver to watch for page changes. When the  ‘Merge pull request’ becomes enabled, it will click it
 - The script also auto-refreshes the page every 5 minutes, to see if the tests passed, but Github failed to enable the merge button.
 - If checks fail or it can’t auto-merge within 2 hours, the script will exit
 - You should keep the tab open until the merge is complete
