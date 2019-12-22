@@ -30,4 +30,4 @@ No more waiting for checks to pass to finally merge your PR! The script will do 
 - You should keep the tab open until the merge is complete
 - If you close the tab or navigate away, while the script is in progress, and then come back, the script will recognize the PR and will resume auto-merging.
 
-<img width="344" src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga5tq0h59bj30j403idfr.jpg"  />
+<img width="344" src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga5tq0h59bj30j403idfr.jpg"  /><img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga5zztauysj30j403ia9z.jpg" width="344" />
