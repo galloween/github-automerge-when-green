@@ -1,6 +1,6 @@
 ## GitHub AutoMergeWhenGreenButton user script for TamperMonkey
 
-![](https://tva1.sinaimg.cn/large/006tNbRwgy1ga4oay6qcgj316i0hiwf9.jpg)
+<img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga4oay6qcgj316i0hiwf9.jpg" width="765" />
 
 No more waiting for checks to pass to finally merge your PR! The script will do the waiting and checking and button clicking for you!
 
@@ -19,7 +19,7 @@ No more waiting for checks to pass to finally merge your PR! The script will do 
 - If checks will fail, the script will alert you and exit. You will need to fix tests, push the branch and reload the PR page to see the Auto-merge button again
 - You can cancel the Auto-merge process by clicking the ‘Cancel’ button
 
-![](https://tva1.sinaimg.cn/large/006tNbRwgy1ga4p7nsc31j316c0hazl2.jpg)
+<img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga4p7nsc31j316c0hazl2.jpg" width="762" />
 
 #### How it works
 
@@ -29,3 +29,5 @@ No more waiting for checks to pass to finally merge your PR! The script will do 
 - If checks fail or it can’t auto-merge within 2 hours, the script will exit
 - You should keep the tab open until the merge is complete
 - If you close the tab or navigate away, while the script is in progress, and then come back, the script will recognize the PR and will resume auto-merging.
+
+<img width="344" src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga5tq0h59bj30j403idfr.jpg"  />
