@@ -140,6 +140,10 @@
       user-select: none;
     }
 
+    .gam-cancel-button:not([hidden]) + .gam-waitForApproval-label {
+      cursor: default;
+    }
+
     .gam-controls-container .gam-triangle {
       width: 0;
       height: 0;
