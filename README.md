@@ -21,6 +21,7 @@ No more waiting for checks to pass to finally merge your PR! The script will do 
 - If the ‘Wait for approval’ checkbox is On, script will not merge until you have at least 1 approval review
 - If changes were requested, you will also be alerted and script will exit. Fix code and start again
 - You can cancel the Auto-merge process by clicking the ‘Cancel’ button
+- If you don’t see the Auto-merge button, make sure you are in Pull Requests / Conversation tab and try to refresh the page
 
 <img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga6q5z0bx1j313g09iq3t.jpg" width="710" />
 
