@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.41
+// @version      0.45
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -30,24 +30,31 @@
     characterData: false,
   };
 
-  const imageWait =
-    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyOTcgMjk3Ij48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTI1MSAyNzdoLTE4di0zMmMwLTMxLTE3LTYwLTQ4LTgyLTQtMi03LTgtNy0xNXMzLTEyIDctMTRjMzEtMjIgNDgtNTEgNDgtODJWMjBoMThhMTAgMTAgMCAwMDAtMjBINDZhMTAgMTAgMCAxMDAgMjBoMTh2MzJjMCAzMSAxNyA2MCA0OCA4MiA0IDIgNyA4IDcgMTUgMCA2LTMgMTItNyAxNC0zMSAyMi00OCA1MS00OCA4MnYzMkg0NmExMCAxMCAwIDAwMCAyMGgyMDVhMTAgMTAgMCAxMDAtMjB6TTg0IDI0NWMwLTMzIDI1LTU1IDQwLTY1IDktNiAxNS0xOCAxNS0zMSAwLTE0LTYtMjYtMTUtMzItMTUtMTAtNDAtMzItNDAtNjVWMjBoMTI5djMyYzAgMzMtMjUgNTUtNDAgNjUtOSA2LTE1IDE4LTE1IDMxIDAgMTQgNiAyNiAxNSAzMiAxNSAxMCA0MCAzMiA0MCA2NXYzMkg4NHYtMzJ6Ii8+PC9zdmc+';
+  const imageWait = (color = 'white') =>
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20297%20297%22%3E%3Cpath%20fill%3D%22${color}%22%20d%3D%22M251%20277h-18v-32c0-31-17-60-48-82-4-2-7-8-7-15s3-12%207-14c31-22%2048-51%2048-82V20h18a10%2010%200%20000-20H46a10%2010%200%20100%2020h18v32c0%2031%2017%2060%2048%2082%204%202%207%208%207%2015%200%206-3%2012-7%2014-31%2022-48%2051-48%2082v32H46a10%2010%200%20000%2020h205a10%2010%200%20100-20zM84%20245c0-33%2025-55%2040-65%209-6%2015-18%2015-31%200-14-6-26-15-32-15-10-40-32-40-65V20h129v32c0%2033-25%2055-40%2065-9%206-15%2018-15%2031%200%2014%206%2026%2015%2032%2015%2010%2040%2032%2040%2065v32H84v-32z%22%2F%3E%3C%2Fsvg%3E`;
 
-  const imagePlay =
-    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMC4xIDMwLjEiPjxwYXRoIGZpbGw9IndoaXRlIiBkPSJNMjAgMTQuNEwxMy43IDEwYS44LjggMCAwMC0xLjIuNnY5YS44LjggMCAwMDEuMi43bDYuMy00LjVjLjItLjIuMy0uNC4zLS43bC0uMy0uNnoiLz48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTE1IDBhMTUgMTUgMCAxMDAgMzAgMTUgMTUgMCAwMDAtMzB6bTAgMjcuNWExMi41IDEyLjUgMCAxMTAtMjUgMTIuNSAxMi41IDAgMDEwIDI1eiIvPjwvc3ZnPg==';
+  const imagePlay = (color = 'white') =>
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2030.1%2030.1%22%3E%3Cpath%20fill%3D%22${color}%22%20d%3D%22M20%2014.4L13.7%2010a.8.8%200%2000-1.2.6v9a.8.8%200%20001.2.7l6.3-4.5c.2-.2.3-.4.3-.7l-.3-.6z%22%2F%3E%3Cpath%20fill%3D%22${color}%22%20d%3D%22M15%200a15%2015%200%20100%2030%2015%2015%200%20000-30zm0%2027.5a12.5%2012.5%200%20110-25%2012.5%2012.5%200%20010%2025z%22%2F%3E%3C%2Fsvg%3E`;
 
-  const imageStop =
-    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NS41IDY1LjUiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMzIuOCAwYTMyLjggMzIuOCAwIDEwMCA2NS42IDMyLjggMzIuOCAwIDAwMC02NS42ek02IDMyLjhhMjYuOCAyNi44IDAgMDE0NC4yLTIwLjNMMTIuNSA1MC4yQzguNSA0NS41IDYgMzkuNCA2IDMyLjh6bTI2LjggMjYuN2MtNiAwLTExLjUtMi0xNi01LjJsMzcuNS0zNy40YTI2LjggMjYuOCAwIDAxLTIxLjUgNDIuN3oiLz48L3N2Zz4=';
+  const imageStop = (color = 'black') =>
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2065.5%2065.5%22%3E%3Cpath%20fill%3D%22${color}%22%20d%3D%22M32.8%200a32.8%2032.8%200%20100%2065.6%2032.8%2032.8%200%20000-65.6zM6%2032.8a26.8%2026.8%200%200144.2-20.3L12.5%2050.2C8.5%2045.5%206%2039.4%206%2032.8zm26.8%2026.7c-6%200-11.5-2-16-5.2l37.5-37.4a26.8%2026.8%200%2001-21.5%2042.7z%22%2F%3E%3C%2Fsvg%3E`;
 
-  const buttonStyle =
-    'background-position: left 10px top 50%; background-repeat: no-repeat; padding-left: 35px; margin-right: 8px; user-select: none;';
+  const imageAdd = (color = 'green') =>
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%223%22%20d%3D%22M25%2013v25M38%2025H13%22%2F%3E%3C%2Fsvg%3E`;
+
+  const imageSuccess = (color = 'green') =>
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%223%22%20d%3D%22M38%2015L22%2033l-10-8%22%2F%3E%3C%2Fsvg%3E`;
+
+  const imageError = (color = 'red') =>
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%223%22%20d%3D%22M16%2034l9-9%209-9M16%2016l9%209%209%209%22%2F%3E%3C%2Fsvg%3E`;
 
   const autoMergeControlsHTML = `
-    <div class="gam-cntrls-cntnr" style="display: flex; position: relative; order: 2; padding: 15px; margin-top: -6px; margin-bottom: 16px; border: 1px solid #2cbe4e; border-radius: 3px; margin-left: 55px;">
-      <button type="button" class="gam-button btn btn-primary mr-2" style="${buttonStyle}"></button>
-      <button type="button" class="gam-cancel-button btn btn-secondary mr-2" style="${buttonStyle} background-image: url(${imageStop}); background-size: 17px auto;" hidden>Cancel</button>
-      <label class="js-reviewed-toggle mr-2 px-2 py-1 rounded-1 f6 text-normal d-flex flex-items-center border text-gray border-gray-dark" style="cursor:pointer; user-select: none;"><input type="checkbox" id="gam-waitForApproval" class="gam-waitForApproval mr-1 js-reviewed-checkbox" type="checkbox">Wait for approval</label>
-      <span aria-hidden="true" style="width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 20px solid #2cbe4e; position: absolute; top: -20px; left: 83px;"></span>
+    <div class="gam-controls-container">
+      <button type="button" class="gam-button btn btn-primary mr-2">Auto merge when green</button>
+      <button type="button" class="gam-cancel-button btn btn-secondary mr-2" hidden>Cancel</button>
+      <label class="gam-waitForApproval-label js-reviewed-toggle mr-2 px-2 py-1 rounded-1 f6 text-normal d-flex flex-items-center border text-gray border-gray-dark"><input type="checkbox" id="gam-waitForApproval" class="gam-waitForApproval mr-1 js-reviewed-checkbox" type="checkbox">Wait for approval</label>
+      <span class="gam-triangle" aria-hidden="true"></span>
+      <p class="gam-status-message"></p>
     </div>
   `;
 
@@ -76,20 +83,90 @@
     timeStampNow,
     hasApprovalEl,
     needApprovalGlobal,
-    waitForApprovalChkbx;
+    waitForApprovalChkbx,
+    statusMessageEl,
+    mergeCompleted;
 
   GM_addStyle(`
     .pull-discussion-timeline .discussion-timeline-actions {
       display: flex; flex-direction: column;
-    }'
+    }
+
     .discussion-timeline-actions #partial-pull-merging {
       order: 1;
     }
+
     .discussion-timeline-actions .js-issue-connector-container {
       order: 3;
     }
+
     .discussion-timeline-actions .timeline-comment-wrapper {
       order: 4;
+    }
+
+    .gam-controls-container {
+      display: flex;
+      flex-wrap: wrap;
+      position: relative;
+      order: 2;
+      padding: 15px;
+      margin-top: -6px;
+      margin-bottom: 16px;
+      border: 1px solid #2cbe4e;
+      border-radius: 3px;
+      margin-left: 55px;
+    }
+
+    .gam-controls-container .gam-button, .gam-controls-container .gam-cancel-button {
+      background-position: left 10px top 50% !important;
+      background-repeat: no-repeat !important;
+      padding-left: 35px;
+      margin-right: 8px;
+      user-select: none;
+    }
+
+    .gam-controls-container .gam-cancel-button {
+      background-image: url(${imageStop()});
+      background-size: 17px auto;
+    }
+
+    .gam-controls-container .gam-button {
+      background-image: url(${imagePlay()});
+      background-size: 20px auto;
+    }
+
+    .gam-waitForApproval-label {
+      cursor:pointer;
+      user-select: none;
+    }
+
+    .gam-controls-container .gam-triangle {
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 20px solid #2cbe4e;
+      position: absolute;
+      top: -20px; left: 83px;
+    }
+
+    .gam-controls-container .gam-status-message {
+      width: 100%;
+      margin: 8px 0 0 0;
+      line-height: 1.2;
+      font-size: 80%;
+    }
+
+    .gam-controls-container .gam-status-message span {
+      display: flex;
+      white-space: pre-line;
+      min-height: 20px;
+      align-items: center;
+      background-position: left 0 top 50%;
+      background-repeat: no-repeat;
+      background-size: 15px auto;
+      padding-left: 25px;
+      white-space: pre-line;
     }
   `);
 
@@ -164,12 +241,14 @@
       hoursBetweenTimeStamps(timeStampNow, mergingBranches[PRid]) <=
         giveUpAfterHours
     ) {
+      const message = 'Recognized this PR, resuming auto-merge';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: green',
         'color: yellow',
-        '\nRecognized this PR, will resume auto-merge.'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageAdd()})">${message}</span>`;
 
       autoMergeStarted = true;
     }
@@ -189,24 +268,32 @@
       }
 
       if (mergeButton && !mergeButton.disabled && !autoMergeStarted) {
+        const message = 'Branch can be merged, no auto-merge needed';
         console.log(
           '%cAutoMergeWhenGreen: %c"' + PRid,
           'color: orange',
           'color: yellow',
-          '\nBranch can be merged, no auto-merge needed.'
+          '\n' + message
         );
+        statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageSuccess(
+          'orange'
+        )})">${message}</span>`;
 
         finishAutoMerge(true);
         return;
       }
 
       if (!mergeButton && !autoMergeStarted) {
+        const message = 'Nothing to merge here';
         console.log(
           '%cAutoMergeWhenGreen: %c"' + PRid,
           'color: orange',
           'color: yellow',
-          '\nNothing to merge here.'
+          '\n' + message
         );
+        statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageStop(
+          'orange'
+        )})">${message}</span>`;
       }
 
       if (
@@ -227,7 +314,7 @@
   };
 
   const addAutoMergeButton = (autostart = false) => {
-    controlsContainer = $('.gam-cntrls-cntnr');
+    controlsContainer = $('.gam-controls-container');
 
     if (!controlsContainer) {
       mergeButtonContainer = $('#partial-pull-merging');
@@ -240,11 +327,14 @@
         mergeButtonContainer.parentNode
       );
       waitForApprovalChkbx = $(
-        '#gam-waitForApproval',
+        '.gam-waitForApproval',
+        mergeButtonContainer.parentNode
+      );
+      statusMessageEl = $(
+        '.gam-status-message',
         mergeButtonContainer.parentNode
       );
 
-      setAMButtonImgPlay();
       waitForApprovalChkbx.checked = needApprovalGlobal;
     }
 
@@ -260,7 +350,7 @@
   const switchButtonsView = (inProgress = true) => {
     if (inProgress && autoMergeButton) {
       autoMergeButton.disabled = true;
-      setAMButtonImgWait();
+      autoMergeButton.innerText = 'Will merge when green';
       waitForApprovalChkbx.disabled = true;
     }
 
@@ -270,7 +360,7 @@
 
     if (!inProgress && autoMergeButton) {
       autoMergeButton.disabled = false;
-      setAMButtonImgPlay();
+      autoMergeButton.innerText = 'Auto merge when green';
       waitForApprovalChkbx.disabled = false;
     }
 
@@ -288,12 +378,16 @@
 
     switchButtonsView(true);
 
+    const message = 'Waiting for the Merge button to become enabled...';
     console.log(
       '%cAutoMergeWhenGreen: %c"' + PRid,
       'color: green',
       'color: yellow',
-      '\nWaiting for the Merge button to become enabled...'
+      '\n' + message
     );
+    statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageWait(
+      'green'
+    )})">${message}</span>`;
 
     clearInterval(refreshIntervalId);
     refreshIntervalId = setInterval(() => {
@@ -309,25 +403,18 @@
   };
 
   const onAutoMergeCancelButtonClick = () => {
+    const message = 'Auto-merge cancelled';
     console.log(
       '%cAutoMergeWhenGreen: %c"' + PRid,
       'color: orange',
       'color: yellow',
-      '\nAuto-merge cancelled.'
+      '\n' + message
     );
+    statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageError(
+      'orange'
+    )})">${message}</span>`;
+
     finishAutoMerge(false);
-  };
-
-  const setAMButtonImgWait = () => {
-    autoMergeButton.style.backgroundImage = 'url(' + imageWait + ')';
-    autoMergeButton.style.backgroundSize = '15px auto';
-    autoMergeButton.innerText = 'Will merge when green';
-  };
-
-  const setAMButtonImgPlay = () => {
-    autoMergeButton.style.backgroundImage = 'url(' + imagePlay + ')';
-    autoMergeButton.style.backgroundSize = '20px auto';
-    autoMergeButton.innerText = 'Auto merge when green';
   };
 
   const checkIfChangesRequested = (forceMessage = false) => {
@@ -336,12 +423,15 @@
     ).filter(el => el.innerHTML.toLowerCase().includes('changes requested'))[0];
 
     if (changesRequestedEl && (!changesRequestedMessageShown || forceMessage)) {
+      const message =
+        'Changes were requested. Cant merge PR. Fix and come back';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: red',
         'color: pink',
-        '\nChanges were requested. Cant merge PR. Fix and come back.'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
 
       GM_notification({
         title: 'Changes requested',
@@ -369,12 +459,14 @@
     )[0];
 
     if (hasConflictsEl && (!hasConflictsMessageShown || forceMessage)) {
+      const message = 'Branch has conflicts. Cant merge PR. Fix and come back';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: red',
         'color: pink',
-        '\nBranch has conflicts. Cant merge PR. Fix and come back.'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
 
       GM_notification({
         title: 'Branch has conflicts',
@@ -402,12 +494,17 @@
       !hasApprovalEl &&
       (!needsApprovalMessageShown || forceMessage)
     ) {
+      const message =
+        'PR has not been approved yet. Will wait until approved. Dont forget to request review!';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: orange',
         'color: yellow',
-        '\nPR has not been approved yet. Will wait until approved. Dont forget to request review!'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageStop(
+        'orange'
+      )})">${message}</span>`;
 
       GM_notification({
         title: 'PR needs approval',
@@ -432,12 +529,14 @@
       mergingBranches[PRid] &&
       hoursBetweenTimeStamps(timeNow, mergingBranches[PRid]) > giveUpAfterHours
     ) {
+      const message = 'Auto-merge is taking too long, giving up';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: red',
         'color: pink',
-        '\nAuto-merge is taking too long, giving up.'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
 
       GM_notification({
         title: 'Auto-merge cancelled (timeout)',
@@ -459,12 +558,14 @@
       checkFailedEl.innerHTML.toLowerCase().includes('fail');
 
     if (checkFailed && (!testFailMessageShown || forceMessage)) {
+      const message = 'Your tests fail. Cant merge PR. Fix and come back';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: red',
         'color: pink',
-        '\nYour tests fail. Cant merge PR. Fix and come back.'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
 
       GM_notification({
         title: 'Tests failed',
@@ -493,12 +594,17 @@
       updateBranchButton.innerHTML.toLowerCase().includes('update')
     ) {
       updateBranchButton.click();
+
+      const mesage = 'Updating branch...';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: green',
         'color: yellow',
-        '\nUpdating branch...'
+        '\n' + mesage
       );
+      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageWait(
+        'green'
+      )})">${message}</span>`;
     }
   };
 
@@ -513,12 +619,14 @@
     ) {
       confirmMergeButton.click();
 
+      const message = 'Merge confirmed!';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: green',
         'color: yellow',
-        '\nMerge confirmed!'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
 
       if (refreshIntervalId) {
         clearInterval(refreshIntervalId);
@@ -552,12 +660,14 @@
     if (alreadyDeleted || canDelete) {
       finishAutoMerge(true);
 
+      const message = 'Branch deleted';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: green',
         'color: yellow',
-        '\nBranch deleted.'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
 
       GM_notification({
         title: 'Merge complete!',
@@ -573,20 +683,22 @@
     );
     if (mergeButton && !mergeButton.disabled && checkIfApproved()) {
       mergeButton.click();
-      removeElement(autoMergeButton);
-      removeElement(autoMergeCancelButton);
 
+      const message = 'Merge started!';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: green',
         'color: yellow',
-        '\nMerge started!'
+        '\n' + message
       );
+      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
+
       GM_notification({
         title: 'Merge started',
         text: PRid,
         timeout: 7000,
       });
+
       testFailMessageShown = false;
       changesRequestedMessageShown = false;
       hasConflictsMessageShown = false;
