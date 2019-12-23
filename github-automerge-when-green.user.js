@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.36
+// @version      0.4
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -14,6 +14,7 @@
 // @grant       GM_notification
 // @grant       GM_setValue
 // @grant       GM_getValue
+
 // ==/UserScript==
 
 (() => {
@@ -28,15 +29,6 @@
     characterData: false,
   };
 
-  const imageAdd =
-    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiM0M2IwNWMiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjMiIGQ9Ik0yNSAxM3YyNU0zOCAyNUgxMyIvPjwvc3ZnPg==';
-
-  const imageSuccess =
-    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiMyNWFlODgiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjMiIGQ9Ik0zOCAxNUwyMiAzM2wtMTAtOCIvPjwvc3ZnPg==';
-
-  const imageCancel =
-    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiNkNzVhNGEiLz48cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2Utd2lkdGg9IjMiIGQ9Ik0xNiAzNGw5LTkgOS05TTE2IDE2bDkgOSA5IDkiLz48L3N2Zz4=';
-
   const imageWait =
     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyOTcgMjk3Ij48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTI1MSAyNzdoLTE4di0zMmMwLTMxLTE3LTYwLTQ4LTgyLTQtMi03LTgtNy0xNXMzLTEyIDctMTRjMzEtMjIgNDgtNTEgNDgtODJWMjBoMThhMTAgMTAgMCAwMDAtMjBINDZhMTAgMTAgMCAxMDAgMjBoMTh2MzJjMCAzMSAxNyA2MCA0OCA4MiA0IDIgNyA4IDcgMTUgMCA2LTMgMTItNyAxNC0zMSAyMi00OCA1MS00OCA4MnYzMkg0NmExMCAxMCAwIDAwMCAyMGgyMDVhMTAgMTAgMCAxMDAtMjB6TTg0IDI0NWMwLTMzIDI1LTU1IDQwLTY1IDktNiAxNS0xOCAxNS0zMSAwLTE0LTYtMjYtMTUtMzItMTUtMTAtNDAtMzItNDAtNjVWMjBoMTI5djMyYzAgMzMtMjUgNTUtNDAgNjUtOSA2LTE1IDE4LTE1IDMxIDAgMTQgNiAyNiAxNSAzMiAxNSAxMCA0MCAzMiA0MCA2NXYzMkg4NHYtMzJ6Ii8+PC9zdmc+';
 
@@ -47,12 +39,20 @@
     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NS41IDY1LjUiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMzIuOCAwYTMyLjggMzIuOCAwIDEwMCA2NS42IDMyLjggMzIuOCAwIDAwMC02NS42ek02IDMyLjhhMjYuOCAyNi44IDAgMDE0NC4yLTIwLjNMMTIuNSA1MC4yQzguNSA0NS41IDYgMzkuNCA2IDMyLjh6bTI2LjggMjYuN2MtNiAwLTExLjUtMi0xNi01LjJsMzcuNS0zNy40YTI2LjggMjYuOCAwIDAxLTIxLjUgNDIuN3oiLz48L3N2Zz4=';
 
   const buttonStyle =
-    'background-position: left 10px top 50%; background-repeat: no-repeat; padding-left: 35px; margin-left: 15px;';
+    'background-position: left 10px top 50%; background-repeat: no-repeat; padding-left: 35px; user-select: none;';
+
+  const autoMergeControlsHTML = `
+    <button type="button" class="gam-button btn btn-primary ml-2" style="${buttonStyle}"></button>
+    <button type="button" class="gam-cancel-button btn btn-secondary ml-2" style="${buttonStyle} background-image: url(${imageStop}); background-size: 17px auto;" hidden>Cancel</button>
+    <label class="js-reviewed-toggle ml-2 px-2 py-1 rounded-1 f6 text-normal d-flex flex-items-center border text-gray border-gray-dark" style="cursor:pointer; user-select: none;"><input type="checkbox" id="gam-waitForApproval" class="gam-waitForApproval mr-1 js-reviewed-checkbox" type="checkbox">Wait for approval</label>
+  `;
 
   let githubApp,
     PRid,
     mergeButton,
     checkFailedEl,
+    changesRequestedEl,
+    hasConflictsEl,
     mergeButtonContainer,
     autoMergeButton,
     autoMergeCancelButton,
@@ -63,14 +63,21 @@
     autoMergeStarted,
     observer,
     testFailMessageShown,
+    changesRequestedMessageShown,
+    hasConflictsMessageShown,
+    needsApprovalMessageShown,
     mergingBranches,
     refreshIntervalId,
-    timeStampNow;
+    timeStampNow,
+    hasApprovalEl,
+    needApprovalGlobal,
+    waitForApprovalChkbx;
 
   const init = () => {
     timeStampNow = new Date().getTime();
     githubApp = $('.application-main');
     mergingBranches = GM_getValue('GHAMWG_mergingBranches', {});
+    needApprovalGlobal = GM_getValue('GHAMWG_needApprovalGlobal', true);
 
     if (!githubApp) {
       console.log(
@@ -100,6 +107,15 @@
 
         if (target.classList.contains('gam-cancel-button')) {
           onAutoMergeCancelButtonClick();
+        }
+      });
+
+      githubApp.addEventListener('change', event => {
+        const target = event.target;
+
+        if (target.classList.contains('gam-waitForApproval')) {
+          needApprovalGlobal = target.checked;
+          GM_setValue('GHAMWG_needApprovalGlobal', needApprovalGlobal);
         }
       });
     }
@@ -140,9 +156,7 @@
   };
 
   const doChecks = () => {
-    const testsPass = checkIfTestsPass();
-
-    if (testsPass) {
+    if (checkIfTestsPass()) {
       mergeButton = $(
         '.merge-pr:not(.open) .mergeability-details .btn-group-merge'
       );
@@ -161,6 +175,7 @@
         );
 
         finishAutoMerge(true);
+        return;
       }
 
       if (!mergeButton && !autoMergeStarted) {
@@ -170,6 +185,14 @@
           'color: yellow',
           '\nNothing to merge here.'
         );
+      }
+
+      if (
+        mergeButton &&
+        (checkIfChangesRequested(false) || checkIfHasConflicts(false))
+      ) {
+        finishAutoMerge(true);
+        return;
       }
 
       if (autoMergeStarted && !checkIfNeedToGiveUp()) {
@@ -186,35 +209,15 @@
     autoMergeCancelButton = $('.merge-pr .gam-cancel-button');
 
     if (!autoMergeButton) {
-      autoMergeButton = document.createElement('button');
-      autoMergeButton.setAttribute('type', 'button');
-      autoMergeButton.classList.add('gam-button', 'btn', 'btn-primary');
-      autoMergeButton.setAttribute('style', buttonStyle);
-      setAMButtonImgPlay();
-      mergeButtonContainer.setAttribute('style', 'display: block;');
-      mergeButtonContainer.appendChild(autoMergeButton);
+      mergeButtonContainer.setAttribute('style', 'display: flex !important;');
+      mergeButtonContainer.insertAdjacentHTML(
+        'beforeend',
+        autoMergeControlsHTML
+      );
       autoMergeButton = $('.gam-button', mergeButtonContainer);
-    }
-
-    if (!autoMergeCancelButton) {
-      autoMergeCancelButton = document.createElement('button');
-      autoMergeCancelButton.setAttribute('type', 'button');
-      autoMergeCancelButton.hidden = true;
-      autoMergeCancelButton.classList.add(
-        'gam-cancel-button',
-        'btn',
-        'btn-secondary'
-      );
-      autoMergeCancelButton.setAttribute(
-        'style',
-        buttonStyle +
-          ' background-image: url(' +
-          imageStop +
-          '); background-size: 17px auto; '
-      );
       setAMButtonImgPlay();
-      autoMergeCancelButton.innerText = 'Cancel';
-      mergeButtonContainer.appendChild(autoMergeCancelButton);
+      waitForApprovalChkbx = $('#gam-waitForApproval', mergeButtonContainer);
+      waitForApprovalChkbx.checked = needApprovalGlobal;
       autoMergeCancelButton = $('.gam-cancel-button', mergeButtonContainer);
     }
 
@@ -286,6 +289,113 @@
     finishAutoMerge(false);
   };
 
+  const setAMButtonImgWait = () => {
+    autoMergeButton.style.backgroundImage = 'url(' + imageWait + ')';
+    autoMergeButton.style.backgroundSize = '15px auto';
+    autoMergeButton.innerText = 'Will merge when green';
+  };
+
+  const setAMButtonImgPlay = () => {
+    autoMergeButton.style.backgroundImage = 'url(' + imagePlay + ')';
+    autoMergeButton.style.backgroundSize = '20px auto';
+    autoMergeButton.innerText = 'Auto merge when green';
+  };
+
+  const checkIfChangesRequested = (forceMessage = false) => {
+    changesRequestedEl = $$(
+      '.mergeability-details .status-heading.text-red'
+    ).filter(el => el.innerHTML.toLowerCase().includes('changes requested'))[0];
+
+    if (changesRequestedEl && (!changesRequestedMessageShown || forceMessage)) {
+      console.log(
+        '%cAutoMergeWhenGreen: %c"' + PRid,
+        'color: red',
+        'color: pink',
+        '\nChanges were requested. Cant merge PR. Fix and come back.'
+      );
+
+      GM_notification({
+        title: 'Changes requested',
+        text: PRid,
+        timeout: !autoMergeStarted ? 10000 : 0,
+      });
+
+      changesRequestedMessageShown = true;
+      autoMergeStarted = false;
+    }
+
+    if (changesRequestedEl) {
+      return true;
+    }
+    return false;
+  };
+
+  const checkIfHasConflicts = (forceMessage = false) => {
+    hasConflictsEl = $$(
+      '.mergeability-details .completeness-indicator-problem + .status-heading'
+    ).filter(
+      el =>
+        el.innerHTML.toLowerCase().includes('has conflicts') &&
+        el.innerHTML.toLowerCase().includes('must be resolved')
+    )[0];
+
+    if (hasConflictsEl && (!hasConflictsMessageShown || forceMessage)) {
+      console.log(
+        '%cAutoMergeWhenGreen: %c"' + PRid,
+        'color: red',
+        'color: pink',
+        '\nBranch has conflicts. Cant merge PR. Fix and come back.'
+      );
+
+      GM_notification({
+        title: 'Branch has conflicts',
+        text: PRid,
+        timeout: !autoMergeStarted ? 10000 : 0,
+      });
+
+      hasConflictsMessageShown = true;
+      autoMergeStarted = false;
+    }
+
+    if (hasConflictsEl) {
+      return true;
+    }
+    return false;
+  };
+
+  const checkIfApproved = (forceMessage = false) => {
+    hasApprovalEl = $(
+      '.pull-discussion-timeline .js-discussion .js-timeline-item .is-approved'
+    );
+
+    if (
+      needApprovalGlobal &&
+      !hasApprovalEl &&
+      (!needsApprovalMessageShown || forceMessage)
+    ) {
+      console.log(
+        '%cAutoMergeWhenGreen: %c"' + PRid,
+        'color: orange',
+        'color: yellow',
+        '\nPR has not been approved yet. Will wait until approved. Dont forget to request review!'
+      );
+
+      GM_notification({
+        title: 'PR needs approval',
+        text: PRid,
+        timeout: !autoMergeStarted ? 10000 : 0,
+      });
+
+      needsApprovalMessageShown = true;
+    }
+
+    if (!needApprovalGlobal || hasApprovalEl) {
+      return true;
+    }
+
+    return false;
+  };
+
   const checkIfNeedToGiveUp = () => {
     const timeNow = new Date().getTime();
 
@@ -303,7 +413,6 @@
       GM_notification({
         title: 'Auto-merge cancelled (timeout)',
         text: PRid,
-        image: imageCancel,
         timeout: !autoMergeStarted ? 10000 : 0,
       });
 
@@ -313,26 +422,14 @@
     return false;
   };
 
-  const setAMButtonImgWait = () => {
-    autoMergeButton.style.backgroundImage = 'url(' + imageWait + ')';
-    autoMergeButton.style.backgroundSize = '15px auto';
-    autoMergeButton.innerText = 'Will merge when green';
-  };
-
-  const setAMButtonImgPlay = () => {
-    autoMergeButton.style.backgroundImage = 'url(' + imagePlay + ')';
-    autoMergeButton.style.backgroundSize = '20px auto';
-    autoMergeButton.innerText = 'Auto merge when green';
-  };
-
-  const checkIfTestsPass = () => {
+  const checkIfTestsPass = (forceMessage = false) => {
     checkFailedEl = $('.mergeability-details .status-heading.text-red');
     const checkFailed =
       checkFailedEl &&
       checkFailedEl.innerHTML.toLowerCase().includes('check') &&
       checkFailedEl.innerHTML.toLowerCase().includes('fail');
 
-    if (checkFailed && !testFailMessageShown) {
+    if (checkFailed && (!testFailMessageShown || forceMessage)) {
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: red',
@@ -343,7 +440,6 @@
       GM_notification({
         title: 'Tests failed',
         text: PRid,
-        image: imageCancel,
         timeout: !autoMergeStarted ? 10000 : 0,
       });
 
@@ -437,7 +533,6 @@
       GM_notification({
         title: 'Merge complete!',
         text: PRid,
-        image: imageSuccess,
         timeout: 12000,
       });
     }
@@ -447,7 +542,7 @@
     mergeButton = $(
       '.merge-pr:not(.open) .mergeability-details .btn-group-merge'
     );
-    if (mergeButton && !mergeButton.disabled) {
+    if (mergeButton && !mergeButton.disabled && checkIfApproved()) {
       mergeButton.click();
       removeElement(autoMergeButton);
       removeElement(autoMergeCancelButton);
@@ -461,16 +556,24 @@
       GM_notification({
         title: 'Merge started',
         text: PRid,
-        image: imageAdd,
         timeout: 7000,
       });
       testFailMessageShown = false;
+      changesRequestedMessageShown = false;
+      hasConflictsMessageShown = false;
+      needsApprovalMessageShown = false;
     }
   };
 
   const finishAutoMerge = (disconnect = true) => {
     autoMergeStarted = false;
-    testFailMessageShown = false;
+
+    if (disconnect) {
+      testFailMessageShown = false;
+      changesRequestedMessageShown = false;
+      hasConflictsMessageShown = false;
+      needsApprovalMessageShown = false;
+    }
 
     switchButtonsView(false);
 
