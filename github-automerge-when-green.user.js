@@ -619,21 +619,6 @@
     }
   };
 
-  const insertBefore = (newElement, referenceElement) => {
-    element.parentNode.insertBefore(newElement, referenceElement);
-  };
-
-  const insertAfter = (newElement, referenceElement) => {
-    referenceElement.parentNode.insertBefore(
-      newElement,
-      referenceElement.nextSibling
-    );
-  };
-
-  const insertHTMLbefore = (html, element) => {
-    element.insertAdjacentHTML('beforeend', html);
-  };
-
   const insertHTMLafter = (html, element) => {
     element.insertAdjacentHTML('afterEnd', html);
   };
