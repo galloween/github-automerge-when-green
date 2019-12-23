@@ -161,6 +161,10 @@
       font-size: 80%;
     }
 
+    .gam-controls-container .gam-status-message:empty {
+      display: none;
+    }
+
     .gam-controls-container .gam-status-message span {
       display: flex;
       white-space: pre-line;
@@ -686,6 +690,17 @@
     }
 
     if (alreadyDeleted || canDelete) {
+      if (controlsContainer) {
+        autoMergeButton.disabled = true;
+        hideElement($('#partial-pull-merging'));
+        controlsContainer.style.marginTop = '16px';
+        removeElement($('.gam-triangle', controlsContainer));
+
+        setTimeout(() => {
+          removeElement(controlsContainer);
+        }, 1000 * 60 * 25);
+      }
+
       finishAutoMerge(true);
 
       const message = 'Merge completed, branch deleted';
@@ -772,6 +787,12 @@
       element.remove();
     }
     element = null;
+  };
+
+  const hideElement = element => {
+    if (element && typeof element.remove === 'function') {
+      element.style.display = 'none';
+    }
   };
 
   const $ = (str, el) => (el || document).querySelector(str);
