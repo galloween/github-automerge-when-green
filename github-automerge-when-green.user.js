@@ -623,12 +623,12 @@
     ) {
       updateBranchButton.click();
 
-      const mesage = 'Updating branch...';
+      const message = 'Updating branch...';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: green',
         'color: yellow',
-        '\n' + mesage
+        '\n' + message
       );
       if (statusMessageEl) {
         statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageWait(
