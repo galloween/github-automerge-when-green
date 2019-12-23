@@ -40,7 +40,7 @@
     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NS41IDY1LjUiPjxwYXRoIGZpbGw9ImJsYWNrIiBkPSJNMzIuOCAwYTMyLjggMzIuOCAwIDEwMCA2NS42IDMyLjggMzIuOCAwIDAwMC02NS42ek02IDMyLjhhMjYuOCAyNi44IDAgMDE0NC4yLTIwLjNMMTIuNSA1MC4yQzguNSA0NS41IDYgMzkuNCA2IDMyLjh6bTI2LjggMjYuN2MtNiAwLTExLjUtMi0xNi01LjJsMzcuNS0zNy40YTI2LjggMjYuOCAwIDAxLTIxLjUgNDIuN3oiLz48L3N2Zz4=';
 
   const buttonStyle =
-    'background-position: left 10px top 50%; background-repeat: no-repeat; padding-left: 35px; user-select: none;';
+    'background-position: left 10px top 50%; background-repeat: no-repeat; padding-left: 35px; margin-right: 8px; user-select: none;';
 
   const autoMergeControlsHTML = `
     <div class="gam-cntrls-cntnr" style="display: flex; position: relative; order: 2; padding: 15px; margin-top: -6px; margin-bottom: 16px; border: 1px solid #2cbe4e; border-radius: 3px; margin-left: 55px;">
