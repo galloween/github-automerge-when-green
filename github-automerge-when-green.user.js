@@ -248,7 +248,9 @@
         'color: yellow',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageAdd()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageAdd()})">${message}</span>`;
+      }
 
       autoMergeStarted = true;
     }
@@ -275,9 +277,11 @@
           'color: yellow',
           '\n' + message
         );
-        statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageSuccess(
-          'orange'
-        )})">${message}</span>`;
+        if (statusMessageEl) {
+          statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageSuccess(
+            'orange'
+          )})">${message}</span>`;
+        }
 
         finishAutoMerge(true);
         return;
@@ -291,9 +295,11 @@
           'color: yellow',
           '\n' + message
         );
-        statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageStop(
-          'orange'
-        )})">${message}</span>`;
+        if (statusMessageEl) {
+          statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageStop(
+            'orange'
+          )})">${message}</span>`;
+        }
       }
 
       if (
@@ -385,9 +391,11 @@
       'color: yellow',
       '\n' + message
     );
-    statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageWait(
-      'green'
-    )})">${message}</span>`;
+    if (statusMessageEl) {
+      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageWait(
+        'green'
+      )})">${message}</span>`;
+    }
 
     clearInterval(refreshIntervalId);
     refreshIntervalId = setInterval(() => {
@@ -410,9 +418,11 @@
       'color: yellow',
       '\n' + message
     );
-    statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageError(
-      'orange'
-    )})">${message}</span>`;
+    if (statusMessageEl) {
+      statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageError(
+        'orange'
+      )})">${message}</span>`;
+    }
 
     finishAutoMerge(false);
   };
@@ -431,7 +441,9 @@
         'color: pink',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      }
 
       GM_notification({
         title: 'Changes requested',
@@ -466,7 +478,9 @@
         'color: pink',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      }
 
       GM_notification({
         title: 'Branch has conflicts',
@@ -502,9 +516,11 @@
         'color: yellow',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageStop(
-        'orange'
-      )})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: orange; background-image: url(${imageStop(
+          'orange'
+        )})">${message}</span>`;
+      }
 
       GM_notification({
         title: 'PR needs approval',
@@ -536,7 +552,9 @@
         'color: pink',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      }
 
       GM_notification({
         title: 'Auto-merge cancelled (timeout)',
@@ -565,7 +583,9 @@
         'color: pink',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: red; background-image: url(${imageError()})">${message}</span>`;
+      }
 
       GM_notification({
         title: 'Tests failed',
@@ -602,9 +622,11 @@
         'color: yellow',
         '\n' + mesage
       );
-      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageWait(
-        'green'
-      )})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageWait(
+          'green'
+        )})">${message}</span>`;
+      }
     }
   };
 
@@ -626,7 +648,9 @@
         'color: yellow',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
+      }
 
       if (refreshIntervalId) {
         clearInterval(refreshIntervalId);
@@ -660,14 +684,16 @@
     if (alreadyDeleted || canDelete) {
       finishAutoMerge(true);
 
-      const message = 'Branch deleted';
+      const message = 'Merge completed, branch deleted';
       console.log(
         '%cAutoMergeWhenGreen: %c"' + PRid,
         'color: green',
         'color: yellow',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
+      }
 
       GM_notification({
         title: 'Merge complete!',
@@ -691,7 +717,9 @@
         'color: yellow',
         '\n' + message
       );
-      statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
+      if (statusMessageEl) {
+        statusMessageEl.innerHTML = `<span style="color: green; background-image: url(${imageSuccess()})">${message}</span>`;
+      }
 
       GM_notification({
         title: 'Merge started',
