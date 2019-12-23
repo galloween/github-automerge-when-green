@@ -234,6 +234,8 @@
     if (inProgress && autoMergeButton) {
       autoMergeButton.disabled = true;
       setAMButtonImgWait();
+      waitForApprovalChkbx.disabled = true;
+      console.log(waitForApprovalChkbx.disabled);
     }
 
     if (inProgress && autoMergeCancelButton) {
@@ -243,6 +245,7 @@
     if (!inProgress && autoMergeButton) {
       autoMergeButton.disabled = false;
       setAMButtonImgPlay();
+      waitForApprovalChkbx.disabled = false;
     }
 
     if (!inProgress && autoMergeCancelButton) {
