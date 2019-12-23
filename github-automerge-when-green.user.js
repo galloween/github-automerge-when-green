@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.4
+// @version      0.41
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -14,6 +14,7 @@
 // @grant       GM_notification
 // @grant       GM_setValue
 // @grant       GM_getValue
+// @grant       GM_addStyle
 
 // ==/UserScript==
 
@@ -42,9 +43,12 @@
     'background-position: left 10px top 50%; background-repeat: no-repeat; padding-left: 35px; user-select: none;';
 
   const autoMergeControlsHTML = `
-    <button type="button" class="gam-button btn btn-primary ml-2" style="${buttonStyle}"></button>
-    <button type="button" class="gam-cancel-button btn btn-secondary ml-2" style="${buttonStyle} background-image: url(${imageStop}); background-size: 17px auto;" hidden>Cancel</button>
-    <label class="js-reviewed-toggle ml-2 px-2 py-1 rounded-1 f6 text-normal d-flex flex-items-center border text-gray border-gray-dark" style="cursor:pointer; user-select: none;"><input type="checkbox" id="gam-waitForApproval" class="gam-waitForApproval mr-1 js-reviewed-checkbox" type="checkbox">Wait for approval</label>
+    <div class="gam-cntrls-cntnr" style="display: flex; position: relative; order: 2; padding: 15px; margin-top: -6px; margin-bottom: 16px; border: 1px solid #2cbe4e; border-radius: 3px; margin-left: 55px;">
+      <button type="button" class="gam-button btn btn-primary mr-2" style="${buttonStyle}"></button>
+      <button type="button" class="gam-cancel-button btn btn-secondary mr-2" style="${buttonStyle} background-image: url(${imageStop}); background-size: 17px auto;" hidden>Cancel</button>
+      <label class="js-reviewed-toggle mr-2 px-2 py-1 rounded-1 f6 text-normal d-flex flex-items-center border text-gray border-gray-dark" style="cursor:pointer; user-select: none;"><input type="checkbox" id="gam-waitForApproval" class="gam-waitForApproval mr-1 js-reviewed-checkbox" type="checkbox">Wait for approval</label>
+      <span aria-hidden="true" style="width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-bottom: 20px solid #2cbe4e; position: absolute; top: -20px; left: 83px;"></span>
+    </div>
   `;
 
   let githubApp,
@@ -54,6 +58,7 @@
     changesRequestedEl,
     hasConflictsEl,
     mergeButtonContainer,
+    controlsContainer,
     autoMergeButton,
     autoMergeCancelButton,
     deleteBranchButton,
@@ -72,6 +77,21 @@
     hasApprovalEl,
     needApprovalGlobal,
     waitForApprovalChkbx;
+
+  GM_addStyle(`
+    .pull-discussion-timeline .discussion-timeline-actions {
+      display: flex; flex-direction: column;
+    }'
+    .discussion-timeline-actions #partial-pull-merging {
+      order: 1;
+    }
+    .discussion-timeline-actions .js-issue-connector-container {
+      order: 3;
+    }
+    .discussion-timeline-actions .timeline-comment-wrapper {
+      order: 4;
+    }
+  `);
 
   const init = () => {
     timeStampNow = new Date().getTime();
@@ -160,9 +180,11 @@
       mergeButton = $(
         '.merge-pr:not(.open) .mergeability-details .btn-group-merge'
       );
-      mergeButtonContainer = mergeButton && mergeButton.closest('.select-menu');
 
-      if (mergeButton && mergeButtonContainer && mergeButton.disabled) {
+      if (
+        (mergeButton && mergeButton.disabled) ||
+        (mergeButton && autoMergeStarted)
+      ) {
         addAutoMergeButton(autoMergeStarted);
       }
 
@@ -205,20 +227,25 @@
   };
 
   const addAutoMergeButton = (autostart = false) => {
-    autoMergeButton = $('.merge-pr .gam-button');
-    autoMergeCancelButton = $('.merge-pr .gam-cancel-button');
+    controlsContainer = $('.gam-cntrls-cntnr');
 
-    if (!autoMergeButton) {
-      mergeButtonContainer.setAttribute('style', 'display: flex !important;');
-      mergeButtonContainer.insertAdjacentHTML(
-        'beforeend',
-        autoMergeControlsHTML
+    if (!controlsContainer) {
+      mergeButtonContainer = $('#partial-pull-merging');
+
+      insertHTMLafter(autoMergeControlsHTML, mergeButtonContainer);
+
+      autoMergeButton = $('.gam-button', mergeButtonContainer.parentNode);
+      autoMergeCancelButton = $(
+        '.gam-cancel-button',
+        mergeButtonContainer.parentNode
       );
-      autoMergeButton = $('.gam-button', mergeButtonContainer);
+      waitForApprovalChkbx = $(
+        '#gam-waitForApproval',
+        mergeButtonContainer.parentNode
+      );
+
       setAMButtonImgPlay();
-      waitForApprovalChkbx = $('#gam-waitForApproval', mergeButtonContainer);
       waitForApprovalChkbx.checked = needApprovalGlobal;
-      autoMergeCancelButton = $('.gam-cancel-button', mergeButtonContainer);
     }
 
     if (autostart && !autoMergeButton.disabled) {
@@ -235,7 +262,6 @@
       autoMergeButton.disabled = true;
       setAMButtonImgWait();
       waitForApprovalChkbx.disabled = true;
-      console.log(waitForApprovalChkbx.disabled);
     }
 
     if (inProgress && autoMergeCancelButton) {
@@ -591,6 +617,25 @@
     if (disconnect) {
       observer.disconnect();
     }
+  };
+
+  const insertBefore = (newElement, referenceElement) => {
+    element.parentNode.insertBefore(newElement, referenceElement);
+  };
+
+  const insertAfter = (newElement, referenceElement) => {
+    referenceElement.parentNode.insertBefore(
+      newElement,
+      referenceElement.nextSibling
+    );
+  };
+
+  const insertHTMLbefore = (html, element) => {
+    element.insertAdjacentHTML('beforeend', html);
+  };
+
+  const insertHTMLafter = (html, element) => {
+    element.insertAdjacentHTML('afterEnd', html);
   };
 
   const removeElement = element => {
