@@ -40,13 +40,13 @@
     `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2065.5%2065.5%22%3E%3Cpath%20fill%3D%22${color}%22%20d%3D%22M32.8%200a32.8%2032.8%200%20100%2065.6%2032.8%2032.8%200%20000-65.6zM6%2032.8a26.8%2026.8%200%200144.2-20.3L12.5%2050.2C8.5%2045.5%206%2039.4%206%2032.8zm26.8%2026.7c-6%200-11.5-2-16-5.2l37.5-37.4a26.8%2026.8%200%2001-21.5%2042.7z%22%2F%3E%3C%2Fsvg%3E`;
 
   const imageAdd = (color = 'green') =>
-    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%223%22%20d%3D%22M25%2013v25M38%2025H13%22%2F%3E%3C%2Fsvg%3E`;
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%225%22%20d%3D%22M25%2013v25M38%2025H13%22%2F%3E%3C%2Fsvg%3E`;
 
   const imageSuccess = (color = 'green') =>
-    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%223%22%20d%3D%22M38%2015L22%2033l-10-8%22%2F%3E%3C%2Fsvg%3E`;
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%225%22%20d%3D%22M38%2015L22%2033l-10-8%22%2F%3E%3C%2Fsvg%3E`;
 
   const imageError = (color = 'red') =>
-    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%223%22%20d%3D%22M16%2034l9-9%209-9M16%2016l9%209%209%209%22%2F%3E%3C%2Fsvg%3E`;
+    `data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2050%2050%22%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%2225%22%20fill%3D%22${color}%22%2F%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-linecap%3D%22round%22%20stroke-miterlimit%3D%2210%22%20stroke-width%3D%225%22%20d%3D%22M16%2034l9-9%209-9M16%2016l9%209%209%209%22%2F%3E%3C%2Fsvg%3E`;
 
   const autoMergeControlsHTML = `
     <div class="gam-controls-container">
