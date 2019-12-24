@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.45
+// @version      0.46
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -59,33 +59,29 @@
   `;
 
   let githubApp,
+    observer,
+    refreshIntervalId,
+    timeStampNow,
+    needApprovalGlobal,
+    mergingBranches,
     PRid,
+    autoMergeStarted,
     mergeButton,
-    checkFailedEl,
-    changesRequestedEl,
-    hasConflictsEl,
-    mergeButtonContainer,
     controlsContainer,
     autoMergeButton,
     autoMergeCancelButton,
-    deleteBranchButton,
-    restoreBranchButton,
-    confirmMergeButton,
-    updateBranchButton,
-    autoMergeStarted,
-    observer,
+    waitForApprovalChkbx,
+    statusMessageEl,
     testFailMessageShown,
     changesRequestedMessageShown,
     hasConflictsMessageShown,
-    needsApprovalMessageShown,
-    mergingBranches,
-    refreshIntervalId,
-    timeStampNow,
-    hasApprovalEl,
-    needApprovalGlobal,
-    waitForApprovalChkbx,
-    statusMessageEl,
-    mergeCompleted;
+    needsApprovalMessageShown;
+
+  const mergeButtonSelector =
+    '.merge-pr:not(.open):not(.is-squashing) .mergeability-details .btn-group-merge, .merge-pr:not(.open).is-squashing .mergeability-details .btn-group-squash';
+
+  const confirmMergeButtonSelector =
+    '.merge-pr.open:not(.is-squashing) .commit-form-actions .btn-primary[value="merge"], .merge-pr.open.is-squashing .commit-form-actions .btn-primary[value="squash"]';
 
   GM_addStyle(`
     .pull-discussion-timeline .discussion-timeline-actions {
@@ -118,19 +114,35 @@
     }
 
     .gam-controls-container .gam-button, .gam-controls-container .gam-cancel-button {
-      background-position: left 10px top 50% !important;
-      background-repeat: no-repeat !important;
-      padding-left: 35px;
       margin-right: 8px;
       user-select: none;
     }
 
-    .gam-controls-container .gam-cancel-button {
+    .gam-controls-container .gam-button, .gam-controls-container .gam-cancel-button {
+      padding-left: 35px;
+      position: relative;
+    }
+
+    .gam-controls-container .gam-button:before, .gam-controls-container .gam-cancel-button:before {
+      content: '';
+      display: inline-block;
+      vertical-align: middle;
+      background-position: left 10px top 50%;
+      background-repeat: no-repeat;
+      height: 100%;
+      width: 35px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+    }
+
+    .gam-controls-container .gam-cancel-button:before {
       background-image: url(${imageStop()});
       background-size: 17px auto;
     }
 
-    .gam-controls-container .gam-button {
+    .gam-controls-container .gam-button:before {
       background-image: url(${imagePlay()});
       background-size: 20px auto;
     }
@@ -206,6 +218,13 @@
       githubApp.addEventListener('click', event => {
         const target = event.target;
 
+        if (
+          target.classList.contains('gam-button') ||
+          target.classList.contains('gam-cancel-button')
+        ) {
+          refreshAllElRefs();
+        }
+
         if (target.classList.contains('gam-button')) {
           onAutoMergeButtonClick();
         }
@@ -266,9 +285,7 @@
 
   const doChecks = () => {
     if (checkIfTestsPass()) {
-      mergeButton = $(
-        '.merge-pr:not(.open) .mergeability-details .btn-group-merge'
-      );
+      mergeButton = $(mergeButtonSelector);
 
       if (
         (mergeButton && mergeButton.disabled) ||
@@ -331,24 +348,8 @@
     controlsContainer = $('.gam-controls-container');
 
     if (!controlsContainer) {
-      mergeButtonContainer = $('#partial-pull-merging');
-
-      insertHTMLafter(autoMergeControlsHTML, mergeButtonContainer);
-
-      autoMergeButton = $('.gam-button', mergeButtonContainer.parentNode);
-      autoMergeCancelButton = $(
-        '.gam-cancel-button',
-        mergeButtonContainer.parentNode
-      );
-      waitForApprovalChkbx = $(
-        '.gam-waitForApproval',
-        mergeButtonContainer.parentNode
-      );
-      statusMessageEl = $(
-        '.gam-status-message',
-        mergeButtonContainer.parentNode
-      );
-
+      insertHTMLafter(autoMergeControlsHTML, $('#partial-pull-merging'));
+      refreshAllElRefs();
       waitForApprovalChkbx.checked = needApprovalGlobal;
     }
 
@@ -436,7 +437,7 @@
   };
 
   const checkIfChangesRequested = (forceMessage = false) => {
-    changesRequestedEl = $$(
+    const changesRequestedEl = $$(
       '.mergeability-details .status-heading.text-red'
     ).filter(el => el.innerHTML.toLowerCase().includes('changes requested'))[0];
 
@@ -470,7 +471,7 @@
   };
 
   const checkIfHasConflicts = (forceMessage = false) => {
-    hasConflictsEl = $$(
+    const hasConflictsEl = $$(
       '.mergeability-details .completeness-indicator-problem + .status-heading'
     ).filter(
       el =>
@@ -507,7 +508,7 @@
   };
 
   const checkIfApproved = (forceMessage = false) => {
-    hasApprovalEl = $(
+    const hasApprovalEl = $(
       '.pull-discussion-timeline .js-discussion .js-timeline-item .is-approved'
     );
 
@@ -577,7 +578,7 @@
   };
 
   const checkIfTestsPass = (forceMessage = false) => {
-    checkFailedEl = $('.mergeability-details .status-heading.text-red');
+    const checkFailedEl = $('.mergeability-details .status-heading.text-red');
     const checkFailed =
       checkFailedEl &&
       checkFailedEl.innerHTML.toLowerCase().includes('check') &&
@@ -613,7 +614,7 @@
   };
 
   const checkIfBranchOutOfDate = () => {
-    updateBranchButton = $(
+    const updateBranchButton = $(
       '.mergeability-details .branch-action-btn > button[type=submit]'
     );
 
@@ -639,14 +640,9 @@
   };
 
   const checkIfNeedToConfirm = () => {
-    confirmMergeButton = $(
-      '.merge-pr.open .merge-branch-form .commit-form-actions .btn-primary'
-    );
+    const confirmMergeButton = $(confirmMergeButtonSelector);
 
-    if (
-      confirmMergeButton &&
-      confirmMergeButton.innerHTML.toLowerCase().includes('confirm')
-    ) {
+    if (confirmMergeButton) {
       confirmMergeButton.click();
 
       const message = 'Merge confirmed!';
@@ -668,10 +664,10 @@
   };
 
   const checkIfNeedToDeleteBranch = () => {
-    restoreBranchButton = $(
+    const restoreBranchButton = $(
       '.pull-request-ref-restore .btn.pull-request-ref-restore-text'
     );
-    deleteBranchButton = $(
+    const deleteBranchButton = $(
       '.branch-action-state-merged .post-merge-message > button[type=submit]'
     );
 
@@ -690,6 +686,8 @@
     }
 
     if (alreadyDeleted || canDelete) {
+      finishAutoMerge(true);
+
       if (controlsContainer) {
         autoMergeButton.disabled = true;
         hideElement($('#partial-pull-merging'));
@@ -698,10 +696,8 @@
 
         setTimeout(() => {
           removeElement(controlsContainer);
-        }, 1000 * 60 * 25);
+        }, 1000 * 60 * 1);
       }
-
-      finishAutoMerge(true);
 
       const message = 'Merge completed, branch deleted';
       console.log(
@@ -723,9 +719,7 @@
   };
 
   const checkIfCanMerge = () => {
-    mergeButton = $(
-      '.merge-pr:not(.open) .mergeability-details .btn-group-merge'
-    );
+    mergeButton = $(mergeButtonSelector);
     if (mergeButton && !mergeButton.disabled && checkIfApproved()) {
       mergeButton.click();
 
@@ -775,6 +769,24 @@
 
     if (disconnect) {
       observer.disconnect();
+    }
+  };
+
+  const refreshAllElRefs = () => {
+    mergeButton = $(mergeButtonSelector);
+    controlsContainer = $('.gam-controls-container');
+
+    if (controlsContainer) {
+      autoMergeButton = $('.gam-button', controlsContainer);
+      autoMergeCancelButton = $('.gam-cancel-button', controlsContainer);
+      waitForApprovalChkbx = $('.gam-waitForApproval', controlsContainer);
+      statusMessageEl = $('.gam-status-message', controlsContainer);
+    } else {
+      console.log(
+        '%cAutoMergeWhenGreen:',
+        'color: red',
+        '\n' + 'refreshAllElRefs > controlsContainer not found'
+      );
     }
   };
 
