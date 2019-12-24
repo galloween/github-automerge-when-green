@@ -1,6 +1,6 @@
 ## GitHub AutoMergeWhenGreenButton user script for TamperMonkey
 
-<img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga6q5zi7tzj313g09i3zc.jpg" width="710" />
+<img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga81kpxe8oj313g09i756.jpg" width="710" />
 
 No more waiting for checks to pass to finally merge your PR! The script will do the waiting and checking and button clicking for you!
 
@@ -23,7 +23,7 @@ No more waiting for checks to pass to finally merge your PR! The script will do 
 - You can cancel the Auto-merge process by clicking the ‘Cancel’ button
 - If you don’t see the Auto-merge button, make sure you are in Pull Requests / Conversation tab and try to refresh the page
 
-<img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga6q5z0bx1j313g09iq3t.jpg" width="710" />
+<img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga81kopygwj313g09igmi.jpg" width="710" />
 
 #### How it works
 
