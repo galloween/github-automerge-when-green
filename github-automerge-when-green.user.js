@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.46
+// @version      0.47
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
@@ -78,10 +78,10 @@
     needsApprovalMessageShown;
 
   const mergeButtonSelector =
-    '.merge-pr:not(.open):not(.is-squashing) .mergeability-details .btn-group-merge, .merge-pr:not(.open).is-squashing .mergeability-details .btn-group-squash';
+    '.merge-pr:not(.open).is-merging .mergeability-details .btn-group-merge, .merge-pr:not(.open).is-squashing .mergeability-details .btn-group-squash, .merge-pr:not(.open).is-rebasing .mergeability-details .btn-group-rebase';
 
   const confirmMergeButtonSelector =
-    '.merge-pr.open:not(.is-squashing) .commit-form-actions .btn-primary[value="merge"], .merge-pr.open.is-squashing .commit-form-actions .btn-primary[value="squash"]';
+    '.merge-pr.open.is-merging .commit-form-actions .btn-primary[value="merge"], .merge-pr.open.is-squashing .commit-form-actions .btn-primary[value="squash"], .merge-pr.open.is-rebasing .commit-form-actions .btn-primary[value="rebase"]';
 
   GM_addStyle(`
     .pull-discussion-timeline .discussion-timeline-actions {
