@@ -100,6 +100,10 @@
       order: 4;
     }
 
+    .pull-discussion-timeline.is-pull-restorable .gam-controls-container {
+      display: none;
+    }
+
     .gam-controls-container {
       display: flex;
       flex-wrap: wrap;
