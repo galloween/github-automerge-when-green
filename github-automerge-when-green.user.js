@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHub AutoMergeWhenGreenButton
 // @namespace    https://github.com/galloween
-// @version      0.47
+// @version      0.48
 // @description  adds 'Auto merge when green button'
 // @author       Pasha Golovin
 // @updateURL   https://raw.githubusercontent.com/galloween/github-automerge-when-green/master/github-automerge-when-green.user.js
