@@ -22,7 +22,7 @@
   'use strict';
 
   const refreshAfterMin = 5;
-  const giveUpAfterHours = 1.5;
+  const giveUpAfterHours = 1.7;
 
   const obsrverConfig = {
     childList: true,
@@ -100,8 +100,13 @@
       order: 4;
     }
 
-    .pull-discussion-timeline.is-pull-restorable .gam-controls-container {
+    .pull-discussion-timeline.is-pull-restorable .gam-controls-container,
+    [data-pull-is-open="false"] ~ .pull-request-tab-content .gam-controls-container {
       display: none;
+    }
+
+    .pull-merging > :last-child > :last-child {
+      margin-bottom: 16px;
     }
 
     .gam-controls-container {
