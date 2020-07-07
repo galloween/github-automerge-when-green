@@ -81,7 +81,7 @@
     '.merge-pr:not(.open).is-merging .mergeability-details .btn-group-merge, .merge-pr:not(.open).is-squashing .mergeability-details .btn-group-squash, .merge-pr:not(.open).is-rebasing .mergeability-details .btn-group-rebase';
 
   const confirmMergeButtonSelector =
-    '.merge-pr.open.is-merging .commit-form-actions .btn-primary[value="merge"], .merge-pr.open.is-squashing .commit-form-actions .btn-primary[value="squash"], .merge-pr.open.is-rebasing .commit-form-actions .btn-primary[value="rebase"]';
+    '.merge-pr.open.is-merging .commit-form-actions .btn-primary[value="merge"], .merge-pr.open.is-merging .btn-group-merge .js-merge-commit-button, .merge-pr.open.is-squashing .commit-form-actions .btn-primary[value="squash"], .merge-pr.open.is-squashing .btn-group-squash .js-merge-commit-button, .merge-pr.open.is-rebasing .commit-form-actions .btn-primary[value="rebase"], .merge-pr.open.is-rebasing .btn-group-rebase .js-merge-commit-button';
 
   GM_addStyle(`
     .pull-discussion-timeline .discussion-timeline-actions {
@@ -224,7 +224,7 @@
 
       observer.observe(githubApp, obsrverConfig);
 
-      githubApp.addEventListener('click', event => {
+      githubApp.addEventListener('click', (event) => {
         const target = event.target;
 
         if (
@@ -243,7 +243,7 @@
         }
       });
 
-      githubApp.addEventListener('change', event => {
+      githubApp.addEventListener('change', (event) => {
         const target = event.target;
 
         if (target.classList.contains('gam-waitForApproval')) {
@@ -448,7 +448,9 @@
   const checkIfChangesRequested = (forceMessage = false) => {
     const changesRequestedEl = $$(
       '.mergeability-details .status-heading.text-red'
-    ).filter(el => el.innerHTML.toLowerCase().includes('changes requested'))[0];
+    ).filter((el) =>
+      el.innerHTML.toLowerCase().includes('changes requested')
+    )[0];
 
     if (changesRequestedEl && (!changesRequestedMessageShown || forceMessage)) {
       const message =
@@ -483,7 +485,7 @@
     const hasConflictsEl = $$(
       '.mergeability-details .completeness-indicator-problem + .status-heading'
     ).filter(
-      el =>
+      (el) =>
         el.innerHTML.toLowerCase().includes('has conflicts') &&
         el.innerHTML.toLowerCase().includes('must be resolved')
     )[0];
@@ -803,14 +805,14 @@
     element.insertAdjacentHTML('afterEnd', html);
   };
 
-  const removeElement = element => {
+  const removeElement = (element) => {
     if (element && typeof element.remove === 'function') {
       element.remove();
     }
     element = null;
   };
 
-  const hideElement = element => {
+  const hideElement = (element) => {
     if (element && typeof element.remove === 'function') {
       element.style.display = 'none';
     }
@@ -825,13 +827,13 @@
 
   function debounce(callback, time) {
     var timeout;
-    return function() {
+    return function () {
       var context = this;
       var args = arguments;
       if (timeout) {
         clearTimeout(timeout);
       }
-      timeout = setTimeout(function() {
+      timeout = setTimeout(function () {
         timeout = null;
         callback.apply(context, args);
       }, time);
