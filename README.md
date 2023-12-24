@@ -1,4 +1,4 @@
-## GitHub AutoMergeWhenGreenButton user script for TamperMonkey
+## GitHub AutoMerge When Green userscript for TamperMonkey
 
 <img src="https://tva1.sinaimg.cn/large/006tNbRwgy1ga81kpxe8oj313g09i756.jpg" width="710" />
 
