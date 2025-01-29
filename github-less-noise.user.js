@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHubHideQodoCrap
 // @namespace    https://github.com/galloween
-// @version      0.2
+// @version      0.3
 // @description  collapses Qodo PR comments and other Qodo noise
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
@@ -89,6 +89,10 @@
     }
 
     .TimelineItem-body .hqc-toggle:after {
+      display: none;
+    }
+
+    .js-timeline-item:has([href*=qodo]) {
       display: none;
     }
 
