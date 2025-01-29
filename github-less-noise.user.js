@@ -4,8 +4,8 @@
 // @version      0.1
 // @description  collapses Qodo PR comments and other Qodo noise
 // @author       Pasha Golovin
-// @updateURL
-// @downloadURL
+// @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
+// @downloadURL  https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
 
 // @include     *github.com/*/pull/*
 // @run-at      document-idle
