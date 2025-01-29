@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHubHideQodoCrap
 // @namespace    https://github.com/galloween
-// @version      0.3
+// @version      0.4
 // @description  collapses Qodo PR comments and other Qodo noise
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
@@ -11,9 +11,6 @@
 // @run-at      document-idle
 // @connect     github.com
 // @connect     githubusercontent.com
-// @grant       GM_notification
-// @grant       GM_setValue
-// @grant       GM_getValue
 // @grant       GM_addStyle
 
 // ==/UserScript==
@@ -36,6 +33,7 @@
       margin-top: 8px;
     }
 
+    .js-timeline-item:has([href*=qodo]),
     details:not([open]):has([href*=qodo]),
     .js-diff-progressive-container:has(.check-annotation-failure) {
       display: none;
@@ -91,39 +89,37 @@
     .TimelineItem-body .hqc-toggle:after {
       display: none;
     }
-
-    .js-timeline-item:has([href*=qodo]) {
-      display: none;
-    }
-
   `);
 
   const hideQodoComments = (event) => {
-    const target = event.target || event.srcElement;
-    if (qodos.has(target) || event.animationName !== 'hqc-nodeInserted') {
-      return;
-    }
+    try {
+      const target = event.target || event.srcElement;
+      if (qodos.has(target) || event.animationName !== 'hqc-nodeInserted') {
+        return;
+      }
 
-    qodos.add(target);
-    target.open = false;
+      qodos.add(target);
+      target.open = false;
 
-    target.insertAdjacentHTML(
-      'beforebegin',
-      `<button type="button" title="Toggle Qodo comment"
+      target.insertAdjacentHTML(
+        'beforebegin',
+        `<button type="button" title="Toggle Qodo comment"
       class="hqc-toggle Button--secondary Button--small Button d-inline-flex">
         <img src="https://avatars.githubusercontent.com/in/484649?s=48&amp;v=4" size="24" height="24" width="24" class="avatar d-inline-block">      
         <span class="hqc-bubble">💬</span>
       </button>`
-    );
+      );
+    } catch (e) {}
   };
 
   const toggleQodoComments = (event) => {
-    const target = event.target;
-
-    if (target.matches('.hqc-toggle')) {
-      const details = target.nextElementSibling;
-      details.open = !details.open;
-    }
+    try {
+      const target = event.target;
+      if (target.matches('.hqc-toggle')) {
+        const details = target.nextElementSibling;
+        details.open = !details.open;
+      }
+    } catch (e) {}
   };
 
   const init = () => {
@@ -147,6 +143,4 @@
   } else {
     init();
   }
-
-  const insertHTMLafter = (html, element) => {};
 })();
