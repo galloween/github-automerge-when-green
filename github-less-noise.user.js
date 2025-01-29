@@ -25,14 +25,14 @@
   const qodos = new WeakSet();
 
   GM_addStyle(`
-    @keyframes nodeInserted {
+    @keyframes hqc-nodeInserted {
       from { opacity: 0.99; }
       to { opacity: 1; }
     }
 
     details[open]:has([href*=qodo]) {
       animation-duration: 0.001s;
-      animation-name: nodeInserted;
+      animation-name: hqc-nodeInserted;
       margin-top: 8px;
     }
 
@@ -40,18 +40,76 @@
     .js-diff-progressive-container:has(.check-annotation-failure) {
       display: none;
     }
+
+    .inline-comments:has(.hqc-toggle) {
+      position: relative;
+    }
+
+    .hqc-toggle {
+      position: absolute;
+      left: 15px;
+      top: -12px;
+      z-index: 100;
+      padding: 8px;
+      height: auto;      
+      --button-default-borderColor-rest: #7568DC;
+      --button-default-borderColor-hover: #7568DC;
+      --button-default-borderColor-active: #7568DC;
+    }
+
+    hqc-toggle,
+    .hqc-toggle:hover,
+    .hqc-toggle:focus {
+      border-color: #7568DC;
+    }
+
+    .hqc-toggle:after {
+      content: '';
+      width: 0; 
+      height: 0; 
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 10px solid #7568DC;    
+      position: absolute;
+      right: -10px;
+    }
+
+    .hqc-toggle * {
+      pointer-events: none;
+    }
+
+    .hqc-bubble {
+      font-size: 16px;
+      display: inline-block;
+      margin: -7px 0 0px 0px;
+    }
+
+    .TimelineItem-body .hqc-toggle {
+      position: static;
+    }
+
+    .TimelineItem-body .hqc-toggle:after {
+      display: none;
+    }
+
   `);
 
   const hideQodoComments = (event) => {
     const target = event.target || event.srcElement;
-    if (qodos.has(target)) return;
+    if (qodos.has(target) || event.animationName !== 'hqc-nodeInserted') {
+      return;
+    }
 
     qodos.add(target);
     target.open = false;
 
     target.insertAdjacentHTML(
       'beforebegin',
-      `<button type="button" class="hqc-toggle Button--secondary Button--small Button d-inline-flex">Toggle Qodo Comment</button>`
+      `<button type="button" title="Toggle Qodo comment"
+      class="hqc-toggle Button--secondary Button--small Button d-inline-flex">
+        <img src="https://avatars.githubusercontent.com/in/484649?s=48&amp;v=4" size="24" height="24" width="24" class="avatar d-inline-block">      
+        <span class="hqc-bubble">💬</span>
+      </button>`
     );
   };
 
