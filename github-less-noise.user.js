@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHubLessNoise
 // @namespace    https://github.com/galloween
-// @version      0.5
+// @version      0.51
 // @description  collapses/resolves Qodo PR comments and other noise
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
@@ -115,6 +115,17 @@
     .gln-qodo-comments-header ~ .gln-qodo-comment details-collapsible:before
      {
       display: none !important;
+    }
+
+    .gln-qodo-comment details-toggle > details:has(>summary[hidden]):before {
+      cursor: pointer;
+      display: block;
+      content: '💬';
+      font-size: 14px;
+      font-weight: 500;      
+      padding: var(--base-size-8, 8px) var(--base-size-16, 16px);
+      background-color: var(--bgColor-muted, var(--color-canvas-subtle));
+      border-radius: inherit;
     }
 
     .timeline-comment-header.gln-qodo-comments-header {
@@ -369,6 +380,14 @@
   const onDocClick = (event) => {
     try {
       const target = event.target;
+
+      if (
+        target.matches(
+          '.gln-qodo-comment details-toggle > details:has(>summary[hidden])'
+        )
+      ) {
+        target.open = !target.open;
+      }
 
       // toggleSection
       if (target.matches('.gln-section-header')) {
