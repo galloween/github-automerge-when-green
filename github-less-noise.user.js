@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHubLessNoise
 // @namespace    https://github.com/galloween
-// @version      0.52
+// @version      0.53
 // @description  collapses/resolves Qodo PR comments and other noise
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
@@ -11,6 +11,8 @@
 // @connect     github.com
 // @connect     githubusercontent.com
 // @grant       GM_addStyle
+// @grant       GM_setValue
+// @grant       GM_getValue
 
 // ==/UserScript==
 
@@ -77,10 +79,11 @@
     // [9] File section header
     '#files_bucket .file-info:has(> button[aria-expanded])',
 
-    // [10] Deleted files toggle
-    '.js-deleted-files-toggle[checked]',
-    // [11] Deleted files toggle menu
-    'file-filter details.diffbar-item.details-reset',
+    // [10] Deleted files toggle menu
+    'file-filter details.diffbar-item:has(.js-deleted-files-toggle[checked])',
+
+    // [11] Show whitespace toggle menu
+    '.diffbar:not(:has(button:not([hidden]) svg.octicon-eye)) .hide-sm details.diffbar-item:has(input[id*="whitespace"])',
   ];
 
   GM_addStyle(/*css*/ `
@@ -119,10 +122,10 @@
     /* Qodo comments in discussion tab */
     ${selectors[7]},
     /* Secondary file changes sections */
-    ${selectors[8]},
-    /* Deleted files toggle */
-    ${selectors[10]},
+    ${selectors[8]},    
     /* Deleted files toggle menu */
+    ${selectors[10]},
+    /* Show whitespace toggle menu */
     ${selectors[11]}
     {
       animation-name: gln-nodeInserted;
@@ -316,7 +319,11 @@
     if (!hasTasks) return;
     let task;
     while ((task = tasks.shift())) {
-      task();
+      try {
+        task();
+      } catch (e) {
+        console.error('GitHubLessNoise', e);
+      }
     }
     hasTasks = false;
   };
@@ -339,23 +346,37 @@
       const target = event.target || event.srcElement;
 
       // hide deleted files changes
-      if (!unimprtnt.has(target) && target.matches(selectors[11])) {
-        unimprtnt.add(target);
-        addTask(() => {
-          target.open = true;
-          setTimeout(() => {
-            target.open = false;
-          }, 200);
-        });
-        return;
-      }
       if (!unimprtnt.has(target) && target.matches(selectors[10])) {
         unimprtnt.add(target);
         addTask(() => {
-          target.checked = false;
-          target.value = 'false';
-          target.dispatchEvent(new Event('change'));
-          target.removeAttribute('checked');
+          const checkbox = target.querySelector('.js-deleted-files-toggle');
+          checkbox.checked = false;
+          checkbox.value = 'false';
+          checkbox.dispatchEvent(new Event('change'));
+          checkbox.removeAttribute('checked');
+        });
+        return;
+      }
+
+      // hide whitespace changes
+      if (
+        !GM_getValue('GHLN_showWhiteSpace', false) &&
+        !unimprtnt.has(target) &&
+        target.matches(selectors[11])
+      ) {
+        GM_setValue('GHLN_whiteSpaceHidden', true);
+        unimprtnt.add(target);
+        addTask(() => {
+          const checkbox = target.querySelector(
+            'input[type="checkbox"][id*="whitespace"]'
+          );
+          checkbox.checked = true;
+          checkbox.value = '1';
+          checkbox.dispatchEvent(new Event('change'));
+          addTask(() => {
+            const reload = target.querySelector('button[type="submit"]');
+            reload?.click();
+          });
         });
         return;
       }
@@ -454,25 +475,14 @@
       }
 
       //
-    } catch (e) {}
+    } catch (e) {
+      console.error('GitHubLessNoise', e);
+    }
   };
 
   const onDocClick = (event) => {
     try {
       const target = event.target;
-
-      if (
-        target.matches(
-          '.gln-qodo-comment details-toggle > details:has(>summary[hidden])'
-        )
-      ) {
-        target.open = !target.open;
-        return;
-      }
-
-      if (target.matches(selectors[9])) {
-        target.querySelector('button[aria-expanded]').click();
-      }
 
       // toggleSection
       if (target.matches('.gln-section-header')) {
@@ -496,23 +506,75 @@
             });
           }
         });
+        return;
       }
-    } catch (e) {}
+
+      // toggle header-less QoDo comments
+      if (
+        target.matches(
+          '.gln-qodo-comment details-toggle > details:has(>summary[hidden])'
+        )
+      ) {
+        addTask(() => {
+          target.open = !target.open;
+        });
+        return;
+      }
+
+      // toggle file changes section
+      if (target.matches(selectors[9])) {
+        addTask(() => {
+          target.querySelector('button[aria-expanded]').click();
+        });
+        return;
+      }
+
+      // when user clicks "Show whitespace", save this preference
+      if (
+        target.matches('.diffbar button:not([hidden]):has(svg.octicon-eye)')
+      ) {
+        console.log('GitHubLessNoise', 'Show whitespace');
+        GM_setValue('GHLN_showWhiteSpace', true);
+      }
+      // when user clicks "Hide whitespace", save this preference
+      if (
+        (target.matches('input[type="checkbox"][id*="whitespace"]') &&
+          target.checked === false) ||
+        (target.matches('input[id*="whitespace"] + label[for*="whitespace"]') &&
+          target.previousElementSibling.checked === false)
+      ) {
+        console.log('GitHubLessNoise', 'Hide whitespace');
+        GM_setValue('GHLN_showWhiteSpace', false);
+      }
+
+      //
+    } catch (e) {
+      console.error('GitHubLessNoise', e);
+    }
   };
 
   const init = () => {
     if (!initDone) {
       initDone = true;
 
-      prAuthor = document
-        .querySelector(
-          '.gh-header.js-pull-header-details .author.Link--secondary'
-        )
-        ?.href.split('/')
-        .slice(-1)[0];
-      user = document.querySelector('meta[name="user-login"]')?.content;
+      prAuthor =
+        document
+          .querySelector(
+            '.gh-header.js-pull-header-details .author.Link--secondary'
+          )
+          ?.href.split('/')
+          .slice(-1)[0]
+          ?.toLowerCase() || '';
+      user =
+        document
+          .querySelector('meta[name="user-login"]')
+          ?.content?.toLowerCase() || '';
 
-      // console.info('GitHubHideQodoCrap', { prAuthor, user });
+      console.info('GitHubHideQodoCrap', {
+        prAuthor,
+        user,
+        showWhiteSpace: GM_getValue('GHLN_showWhiteSpace', false),
+      });
 
       document.addEventListener('animationstart', onRendered, {
         capture: false,
