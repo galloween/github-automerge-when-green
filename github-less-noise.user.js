@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         GitHubLessNoise
 // @namespace    https://github.com/galloween
-// @version      0.51
+// @version      0.52
 // @description  collapses/resolves Qodo PR comments and other noise
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
 // @downloadURL  https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
-
 // @include     *github.com/*/pull/*
 // @run-at      document-idle
 // @connect     github.com
@@ -26,6 +25,7 @@
   const sections = new WeakSet();
   const buttons = new WeakSet();
   const details = new WeakSet();
+  const unimprtnt = new WeakSet();
 
   let prAuthor, user;
 
@@ -34,7 +34,7 @@
 
   const selectors = [
     // [0] Qodo comments container
-    'details:has([href*=qodo])',
+    '.Layout-main details:has([href*=qodo])',
 
     // [1] collapsible sections headers
 
@@ -51,7 +51,7 @@
     '.pull-request-tab-content#discussion_bucket button.ajax-pagination-btn[data-disable-with]',
 
     // [3] Outdated comments
-    'details-toggle > details[open]:has([title*="Outdated"])',
+    'details-toggle > details:has([title*="Outdated"])',
 
     // [4] Resolve conversation button
     'form.js-resolvable-timeline-thread-form button[data-disable-with^="Resolving"]',
@@ -65,6 +65,22 @@
     // [7] Qodo comments in discussion tab
     '.pull-discussion-timeline .TimelineItem:first-child:has([href*=qodo]):not(.js-command-palette-pull-body) .timeline-comment-header,' +
       '.pull-discussion-timeline .TimelineItem:first-child:has([href*=qodo]):not(.js-command-palette-pull-body):not(:has(.timeline-comment-header))',
+
+    // [8] Secondary file changes sections
+    '#files_bucket [data-path*=".spec.ts"] button[aria-expanded="true"],' +
+      '#files_bucket [data-path*=".mock.ts"] button[aria-expanded="true"],' +
+      '#files_bucket [data-path*=".mocks.ts"] button[aria-expanded="true"],' +
+      '#files_bucket [data-path*=".module.ts"] button[aria-expanded="true"],' +
+      '#files_bucket [data-path*="index.ts"] button[aria-expanded="true"],' +
+      '#files_bucket [data-file-deleted="true"] button[aria-expanded="true"]',
+
+    // [9] File section header
+    '#files_bucket .file-info:has(> button[aria-expanded])',
+
+    // [10] Deleted files toggle
+    '.js-deleted-files-toggle[checked]',
+    // [11] Deleted files toggle menu
+    'file-filter details.diffbar-item.details-reset',
   ];
 
   GM_addStyle(/*css*/ `
@@ -73,12 +89,14 @@
       to { opacity: 1; }
     }
 
-    summary, details-collapsible, .gln-qodo-comments-header {
+    .Layout-main details-collapsible, 
+    .Layout-main details-toggle > details > summary, 
+    .gln-qodo-comments-header {
       display: flex !important;
       align-items: start;
     }
-    summary > :last-child,
-    details-collapsible > :last-child,
+    .Layout-main details-toggle > details > summary > :last-child,
+    .Layout-main details-collapsible > :last-child,
     .gln-qodo-comments-header > :last-child {
       flex-grow: 1;
     }
@@ -91,7 +109,7 @@
     /* "Load more" button */
     ${selectors[2]},
     /* Outdated comments */
-    ${selectors[3]}, 
+    ${selectors[3]},
     /* Resolve QoDo comments button */
     ${selectors[4]},
     /* Resolved deferred comments */
@@ -99,10 +117,17 @@
     /* Multiple Qodo comments container */
     ${selectors[6]},
     /* Qodo comments in discussion tab */
-    ${selectors[7]}
+    ${selectors[7]},
+    /* Secondary file changes sections */
+    ${selectors[8]},
+    /* Deleted files toggle */
+    ${selectors[10]},
+    /* Deleted files toggle menu */
+    ${selectors[11]}
     {
       animation-name: gln-nodeInserted;
       animation-duration: 0.001s;
+      user-select: none;
     }
 
     /* Qodo comments */
@@ -122,7 +147,7 @@
       display: block;
       content: '💬';
       font-size: 14px;
-      font-weight: 500;      
+      font-weight: 500;
       padding: var(--base-size-8, 8px) var(--base-size-16, 16px);
       background-color: var(--bgColor-muted, var(--color-canvas-subtle));
       border-radius: inherit;
@@ -147,7 +172,7 @@
     .pull-discussion-timeline .TimelineItem:first-child:has([href*=qodo]):not(.js-command-palette-pull-body) .timeline-comment-header:before {
       order: 1;
     }
-   
+
     .gln-qodo-comment > turbo-frame > details-collapsible:before,
     details-collapsible:not(details-collapsible details-collapsible):has([href*=qodo]):before {
       content: '';
@@ -172,7 +197,7 @@
 
     /* Discussion tab */
     .pull-request-tab-content#discussion_bucket {
-      --stack-padding-normal: 10px;      
+      --stack-padding-normal: 10px;
     }
     .js-command-palette-pull-body[data-url][data-channel] {
       margin-bottom: 20px;
@@ -208,25 +233,32 @@
     .js-timeline-item:has([href="/apps/github-actions"]) {
       order: 1502;
     }
-    
+
 
     /* toggle section */
 
     .gln-section-header {
       pointer-events: auto;
       cursor: pointer;
+      user-select: none;
       /* border: 1px solid #D8DEE4; */
       border-radius: 4px;
       padding: 2px 5px 2px 5px;
       margin: 4px 0;
     }
 
+
+    .comment-body details > summary::marker {
+      display: none;
+      font-size: 0px;
+    }
+
     .comment-body details > summary:before,
-    .gln-section-header:before {     
-      margin-right: 9px;      
+    .gln-section-header:before {
+      margin-right: 9px;
       position: static;
       width: auto;
-      background: none;       
+      background: none;
       line-height: 2;
    }
 
@@ -235,7 +267,7 @@
    }
 
    .gln-section-header:before {
-    font-size: 15px;      
+    font-size: 15px;
    }
 
    .comment-body details[open] > summary:before,
@@ -249,10 +281,11 @@
       margin-right: 5px;
     }
 
+    details-toggle > details > summary :not(button),
     .gln-section-header * {
       pointer-events: none;
     }
-    
+
     .gln-section-header.gln-section-hidden + *,
     .gln-section-header .TimelineItem-badge,
     .gln-section-header.gln-qodo-comments-header.gln-section-hidden ~ .comment-holder
@@ -260,6 +293,22 @@
       display: none;
     }
 
+    ${selectors[9]} {
+      cursor: pointer;
+      user-select: none;
+    }
+    ${selectors[9]} :not(button[aria-expanded]) {
+      pointer-events: none;
+    }
+
+    clipboard-copy, summary {
+      pointer-events: auto !important;
+    }
+    clipboard-copy:hover {
+      outline: 1px solid grey;
+      outline-offset: 3px;
+      border-radius: 1px;
+    }
 
   `);
 
@@ -288,6 +337,37 @@
       }
 
       const target = event.target || event.srcElement;
+
+      // hide deleted files changes
+      if (!unimprtnt.has(target) && target.matches(selectors[11])) {
+        unimprtnt.add(target);
+        addTask(() => {
+          target.open = true;
+          setTimeout(() => {
+            target.open = false;
+          }, 200);
+        });
+        return;
+      }
+      if (!unimprtnt.has(target) && target.matches(selectors[10])) {
+        unimprtnt.add(target);
+        addTask(() => {
+          target.checked = false;
+          target.value = 'false';
+          target.dispatchEvent(new Event('change'));
+          target.removeAttribute('checked');
+        });
+        return;
+      }
+
+      // hide non-important file changes
+      if (!unimprtnt.has(target) && target.matches(selectors[8])) {
+        unimprtnt.add(target);
+        addTask(() => {
+          target.click();
+        });
+        return;
+      }
 
       // Load more Timeline items
       if (!buttons.has(target) && target.matches(selectors[2])) {
@@ -387,6 +467,11 @@
         )
       ) {
         target.open = !target.open;
+        return;
+      }
+
+      if (target.matches(selectors[9])) {
+        target.querySelector('button[aria-expanded]').click();
       }
 
       // toggleSection
