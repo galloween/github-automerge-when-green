@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         GitHubLessNoise
 // @namespace    https://github.com/galloween
-// @version      0.53
-// @description  collapses/resolves Qodo PR comments and other noise
+// @version      0.54
+// @description  Makes PR-reviews a little easier by collapsing less-important sections - like outdated or resolved comments, deleted files, spec & mock file changes, etc. Also auto-resolves and collapses QoDo-bot comments.
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
 // @downloadURL  https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
@@ -34,23 +34,56 @@
   const tasks = [];
   let hasTasks = false;
 
+  const log = (message) => {
+    console.info('%cGitHubLessNoise:', 'color: orange', message);
+  };
+  const logError = (message) => {
+    console.error('%cGitHubLessNoise:', 'color: red', message);
+  };
+
+  const runTasks = () => {
+    if (!hasTasks) return;
+    let task;
+    while ((task = tasks.shift())) {
+      try {
+        task();
+      } catch (e) {
+        logError(e);
+      }
+    }
+    hasTasks = false;
+  };
+
+  const addTask = (task) => {
+    tasks.push(task);
+    if (hasTasks) return;
+    hasTasks = true;
+    requestAnimationFrame(() => {
+      runTasks();
+    });
+  };
+
   const selectors = [
     // [0] Qodo comments container
-    '.Layout-main details:has([href*=qodo])',
+    [
+      '.pull-discussion-timeline details:has([href*=qodo])',
+      '#files details:has([href*=qodo])',
+    ].join(', '),
 
     // [1] collapsible sections headers
-
-    // PR description sections
-    '.js-discussion .TimelineItem h3:not(:first-of-type),' +
+    [
+      // PR description sections
+      '.pull-discussion-timeline .TimelineItem h3:not(:first-of-type)',
       // "Affected"
-      'h4:has(+.highlight-source-shell),' +
+      'h4:has(+.highlight-source-shell)',
       // Sections with commit lists
-      '.js-timeline-item [data-view-component="true"].TimelineItem:has(+ div:not([class])),' +
+      '.js-timeline-item [data-view-component="true"].TimelineItem:has(+ div:not([class]))',
       // multiple Qodo comments header
       '.gln-qodo-comments-header',
+    ].join(', '),
 
     // [2] Load more button
-    '.pull-request-tab-content#discussion_bucket button.ajax-pagination-btn[data-disable-with]',
+    '.pull-discussion-timeline button.ajax-pagination-btn[data-disable-with]',
 
     // [3] Outdated comments
     'details-toggle > details:has([title*="Outdated"])',
@@ -65,19 +98,24 @@
     '.line-comments:has(> .gln-qodo-comment)',
 
     // [7] Qodo comments in discussion tab
-    '.pull-discussion-timeline .TimelineItem:first-child:has([href*=qodo]):not(.js-command-palette-pull-body) .timeline-comment-header,' +
+    [
+      '.pull-discussion-timeline .TimelineItem:first-child:has([href*=qodo]):not(.js-command-palette-pull-body) .timeline-comment-header',
       '.pull-discussion-timeline .TimelineItem:first-child:has([href*=qodo]):not(.js-command-palette-pull-body):not(:has(.timeline-comment-header))',
+    ].join(', '),
 
-    // [8] Secondary file changes sections
-    '#files_bucket [data-path*=".spec.ts"] button[aria-expanded="true"],' +
-      '#files_bucket [data-path*=".mock.ts"] button[aria-expanded="true"],' +
-      '#files_bucket [data-path*=".mocks.ts"] button[aria-expanded="true"],' +
-      '#files_bucket [data-path*=".module.ts"] button[aria-expanded="true"],' +
-      '#files_bucket [data-path*="index.ts"] button[aria-expanded="true"],' +
-      '#files_bucket [data-file-deleted="true"] button[aria-expanded="true"]',
+    // [8] Less-important file changes sections
+    [
+      '#files [data-path*=".json"] button[aria-expanded="true"]',
+      '#files [data-path*=".spec."] button[aria-expanded="true"]',
+      '#files [data-path*=".mock."] button[aria-expanded="true"]',
+      '#files [data-path*=".mocks."] button[aria-expanded="true"]',
+      '#files [data-path*=".module."] button[aria-expanded="true"]',
+      '#files [data-path*="index."] button[aria-expanded="true"]',
+      '#files [data-file-deleted="true"] button[aria-expanded="true"]',
+    ].join(', '),
 
     // [9] File section header
-    '#files_bucket .file-info:has(> button[aria-expanded])',
+    '#files .file-info:has(> button[aria-expanded])',
 
     // [10] Deleted files toggle menu
     'file-filter details.diffbar-item:has(.js-deleted-files-toggle[checked])',
@@ -91,19 +129,6 @@
       from { opacity: 0.99; }
       to { opacity: 1; }
     }
-
-    .Layout-main details-collapsible, 
-    .Layout-main details-toggle > details > summary, 
-    .gln-qodo-comments-header {
-      display: flex !important;
-      align-items: start;
-    }
-    .Layout-main details-toggle > details > summary > :last-child,
-    .Layout-main details-collapsible > :last-child,
-    .gln-qodo-comments-header > :last-child {
-      flex-grow: 1;
-    }
-
 
     /* Qodo comments */
     ${selectors[0]},
@@ -121,7 +146,7 @@
     ${selectors[6]},
     /* Qodo comments in discussion tab */
     ${selectors[7]},
-    /* Secondary file changes sections */
+    /* Less-important file changes sections */
     ${selectors[8]},    
     /* Deleted files toggle menu */
     ${selectors[10]},
@@ -131,6 +156,41 @@
       animation-name: gln-nodeInserted;
       animation-duration: 0.001s;
       user-select: none;
+    }
+
+    /* Global */
+
+    .pull-discussion-timeline details-collapsible, 
+    .pull-discussion-timeline details-toggle > details > summary, 
+    #files details-collapsible, 
+    #files details-toggle > details > summary, 
+    .gln-qodo-comments-header {
+      display: flex !important;
+      align-items: start;
+    }
+    .pull-discussion-timeline details-toggle > details > summary > :last-child,
+    .pull-discussion-timeline details-collapsible > :last-child,
+    #files details-toggle > details > summary > :last-child,
+    #files details-collapsible > :last-child,
+    .gln-qodo-comments-header > :last-child {
+      flex-grow: 1;
+    }
+
+    ${selectors[9]} {
+      cursor: pointer;
+      user-select: none;
+    }
+    ${selectors[9]} :not(button[aria-expanded]) {
+      pointer-events: none;
+    }
+
+    clipboard-copy, summary {
+      pointer-events: auto !important;
+    }
+    clipboard-copy:hover {
+      outline: 1px solid grey;
+      outline-offset: 3px;
+      border-radius: 1px;
     }
 
     /* Qodo comments */
@@ -199,7 +259,8 @@
     }
 
     /* Discussion tab */
-    .pull-request-tab-content#discussion_bucket {
+
+    .pull-discussion-timeline {
       --stack-padding-normal: 10px;
     }
     .js-command-palette-pull-body[data-url][data-channel] {
@@ -213,6 +274,7 @@
     }
 
     /* Hide not-last Nx-cloud & Currents bot comments */
+
     .js-timeline-item:has([href="/apps/nx-cloud"]):has(~.js-timeline-item [href="/apps/nx-cloud"]),
     .js-timeline-item:has([href="/apps/nx-cloud"]):has(~ #js-progressive-timeline-item-container .js-timeline-item [href="/apps/nx-cloud"]),
     .js-timeline-item:has([href="/apps/currents-bot"]):has(~.js-timeline-item [href="/apps/currents-bot"]),
@@ -222,7 +284,9 @@
 
 
     /* Move Nx-cloud & Currents bot comments to the end */
+
     .js-discussion,
+    .pull-discussion-timeline,
     #js-progressive-timeline-item-container {
       display: flex;
       flex-direction: column;
@@ -238,7 +302,7 @@
     }
 
 
-    /* toggle section */
+    /* Toggle section */
 
     .gln-section-header {
       pointer-events: auto;
@@ -296,46 +360,7 @@
       display: none;
     }
 
-    ${selectors[9]} {
-      cursor: pointer;
-      user-select: none;
-    }
-    ${selectors[9]} :not(button[aria-expanded]) {
-      pointer-events: none;
-    }
-
-    clipboard-copy, summary {
-      pointer-events: auto !important;
-    }
-    clipboard-copy:hover {
-      outline: 1px solid grey;
-      outline-offset: 3px;
-      border-radius: 1px;
-    }
-
   `);
-
-  const runTasks = () => {
-    if (!hasTasks) return;
-    let task;
-    while ((task = tasks.shift())) {
-      try {
-        task();
-      } catch (e) {
-        console.error('GitHubLessNoise', e);
-      }
-    }
-    hasTasks = false;
-  };
-
-  const addTask = (task) => {
-    tasks.push(task);
-    if (hasTasks) return;
-    hasTasks = true;
-    requestAnimationFrame(() => {
-      runTasks();
-    });
-  };
 
   const onRendered = (event) => {
     try {
@@ -476,7 +501,7 @@
 
       //
     } catch (e) {
-      console.error('GitHubLessNoise', e);
+      logError(e);
     }
   };
 
@@ -533,8 +558,8 @@
       if (
         target.matches('.diffbar button:not([hidden]):has(svg.octicon-eye)')
       ) {
-        console.log('GitHubLessNoise', 'Show whitespace');
         GM_setValue('GHLN_showWhiteSpace', true);
+        return;
       }
       // when user clicks "Hide whitespace", save this preference
       if (
@@ -543,13 +568,13 @@
         (target.matches('input[id*="whitespace"] + label[for*="whitespace"]') &&
           target.previousElementSibling.checked === false)
       ) {
-        console.log('GitHubLessNoise', 'Hide whitespace');
         GM_setValue('GHLN_showWhiteSpace', false);
+        return;
       }
 
       //
     } catch (e) {
-      console.error('GitHubLessNoise', e);
+      logError(e);
     }
   };
 
@@ -570,7 +595,7 @@
           .querySelector('meta[name="user-login"]')
           ?.content?.toLowerCase() || '';
 
-      console.info('GitHubHideQodoCrap', {
+      log({
         prAuthor,
         user,
         showWhiteSpace: GM_getValue('GHLN_showWhiteSpace', false),
