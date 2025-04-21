@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHubLessNoise
 // @namespace    https://github.com/galloween
-// @version      0.54
+// @version      0.55
 // @description  Makes PR-reviews a little easier by collapsing less-important sections - like outdated or resolved comments, deleted files, spec & mock file changes, etc. Also auto-resolves and collapses QoDo-bot comments.
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
@@ -106,9 +106,10 @@
     // [8] Less-important file changes sections
     [
       '#files [data-path*=".json"] button[aria-expanded="true"]',
+      '#files [data-path*=".conf"] button[aria-expanded="true"]',
       '#files [data-path*=".spec."] button[aria-expanded="true"]',
-      '#files [data-path*=".mock."] button[aria-expanded="true"]',
-      '#files [data-path*=".mocks."] button[aria-expanded="true"]',
+      '#files [data-path*="mock."] button[aria-expanded="true"]',
+      '#files [data-path*="mocks."] button[aria-expanded="true"]',
       '#files [data-path*=".module."] button[aria-expanded="true"]',
       '#files [data-path*="index."] button[aria-expanded="true"]',
       '#files [data-file-deleted="true"] button[aria-expanded="true"]',
@@ -147,7 +148,7 @@
     /* Qodo comments in discussion tab */
     ${selectors[7]},
     /* Less-important file changes sections */
-    ${selectors[8]},    
+    ${selectors[8]},
     /* Deleted files toggle menu */
     ${selectors[10]},
     /* Show whitespace toggle menu */
@@ -160,10 +161,10 @@
 
     /* Global */
 
-    .pull-discussion-timeline details-collapsible, 
-    .pull-discussion-timeline details-toggle > details > summary, 
-    #files details-collapsible, 
-    #files details-toggle > details > summary, 
+    .pull-discussion-timeline details-collapsible,
+    .pull-discussion-timeline details-toggle > details > summary,
+    #files details-collapsible,
+    #files details-toggle > details > summary,
     .gln-qodo-comments-header {
       display: flex !important;
       align-items: start;
@@ -184,7 +185,7 @@
       pointer-events: none;
     }
 
-    clipboard-copy, summary {
+    clipboard-copy, summary, .js-expand-full-wrapper {
       pointer-events: auto !important;
     }
     clipboard-copy:hover {
