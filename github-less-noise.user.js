@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitHubLessNoise
 // @namespace    https://github.com/galloween
-// @version      0.55
+// @version      0.56
 // @description  Makes PR-reviews a little easier by collapsing less-important sections - like outdated or resolved comments, deleted files, spec & mock file changes, etc. Also auto-resolves and collapses QoDo-bot comments.
 // @author       Pasha Golovin
 // @updateURL    https://github.com/galloween/github-automerge-when-green/raw/refs/heads/master/github-less-noise.user.js
@@ -181,14 +181,17 @@
       cursor: pointer;
       user-select: none;
     }
-    ${selectors[9]} :not(button[aria-expanded]) {
+    ${selectors[9]} :not(button[aria-expanded], .js-expand-full-wrapper button) {
       pointer-events: none;
     }
 
-    clipboard-copy, summary, .js-expand-full-wrapper {
+    .js-expand-full-wrapper button {
+      line-height: 0;
+    }
+    clipboard-copy, summary, .js-expand-full-wrapper button {
       pointer-events: auto !important;
     }
-    clipboard-copy:hover {
+    clipboard-copy:hover, .js-expand-full-wrapper button:hover {
       outline: 1px solid grey;
       outline-offset: 3px;
       border-radius: 1px;
